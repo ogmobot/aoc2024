@@ -1,0 +1,35 @@
+PROC bubblesort = (REF []INT vals, INT arraylen) VOID:
+(
+    BOOL finished := FALSE;
+    WHILE (NOT finished) DO
+        finished := TRUE;
+        FOR i TO arraylen - 1 DO
+            IF vals[i] > vals[i+1] THEN
+                INT tmp := vals[i];
+                vals[i] := vals[i+1];
+                vals[i+1] := tmp;
+                finished := FALSE
+            FI
+        OD
+    OD
+);
+
+BEGIN
+    FILE fp;
+    INT a, linecount := 1000;
+    [linecount]INT xs, ys;
+    open(fp, "input01.txt", stand in channel);
+    # TODO get lines until EOF detected #
+    FOR i TO linecount DO
+        get(fp, a); xs[i] := a;
+        get(fp, a); ys[i] := a
+    OD;
+    close(fp);
+    bubblesort(xs, linecount);
+    bubblesort(ys, linecount);
+    INT total := 0;
+    FOR i TO linecount DO
+        total +:= ABS(xs[i] - ys[i])
+    OD;
+    print((total, newline))
+END
