@@ -82,32 +82,30 @@ PROC quicksort = (REF []INT vals, INT lower, upper) VOID:
     FI
 );
 
-BEGIN
-    FILE fp;
-    INT a, linecount := 1000;
-    [linecount]INT xs, ys;
-    open(fp, "input01.txt", stand in channel);
-    # TODO get lines until EOF detected #
-    FOR i TO linecount DO
-        get(fp, a); xs[i] := a;
-        get(fp, a); ys[i] := a
-    OD;
-    close(fp);
-    quicksort(xs, LWB xs, UPB xs);
-    quicksort(ys, LWB ys, UPB ys);
-    # note that ys_ft will stay sorted #
-    # so we should have amortised O(n) lookup #
-    FREQTABLE ys_ft := FREQTABLE(0, 0, NIL);
-    INT total := 0;
-    FOR i FROM LWB xs TO UPB xs DO
-        total +:= ABS(xs[i] - ys[i]);
-        ft_inc(ys_ft, ys[i])
-    OD;
-    print((total, newline));
+FILE fp;
+INT a, linecount := 1000;
+[linecount]INT xs, ys;
+open(fp, "input01.txt", stand in channel);
+# TODO get lines until EOF detected #
+FOR i TO linecount DO
+    get(fp, a); xs[i] := a;
+    get(fp, a); ys[i] := a
+OD;
+close(fp);
+quicksort(xs, LWB xs, UPB xs);
+quicksort(ys, LWB ys, UPB ys);
+# note that ys_ft will stay sorted #
+# so in total, all combined lookups should be O(n) amortised #
+FREQTABLE ys_ft := FREQTABLE(0, 0, NIL);
+INT total := 0;
+FOR i FROM LWB xs TO UPB xs DO
+    total +:= ABS(xs[i] - ys[i]);
+    ft_inc(ys_ft, ys[i])
+OD;
+print((total, newline));
 
-    total := 0;
-    FOR i FROM LWB xs TO UPB xs DO
-        total +:= xs[i]*ft_dropuntil(ys_ft, xs[i])
-    OD;
-    print((total, newline))
-END
+total := 0;
+FOR i FROM LWB xs TO UPB xs DO
+    total +:= xs[i]*ft_dropuntil(ys_ft, xs[i])
+OD;
+print((total, newline))
