@@ -1,17 +1,85 @@
-PROC bubblesort = (REF []INT vals, INT arraylen) VOID:
+MODE FREQTABLE = STRUCT(
+    INT x,
+    INT f,
+    REF FREQTABLE next
+);
+
+PROC ft_inc = (REF FREQTABLE ft, INT val) VOID:
 (
-    BOOL finished := FALSE;
-    WHILE (NOT finished) DO
-        finished := TRUE;
-        FOR i TO arraylen - 1 DO
-            IF vals[i] > vals[i+1] THEN
-                INT tmp := vals[i];
-                vals[i] := vals[i+1];
-                vals[i+1] := tmp;
-                finished := FALSE
-            FI
+    REF FREQTABLE curr := ft;
+    WHILE (next OF curr ISNT REF FREQTABLE(NIL)) ANDTH (x OF curr /= val) DO
+        curr := next OF curr
+    OD;
+    IF x OF curr = val THEN
+        f OF curr +:= 1
+    ELSE
+        # allocate memory for a new freqtable row on the heap #
+        next OF curr := HEAP FREQTABLE := (val, 1, NIL)
+    FI
+);
+
+PROC ft_dropuntil = (REF FREQTABLE ft, INT val) INT:
+# Removes rows prior to the one for which x >= val. #
+# Returns that row's f if x = val, or 0 otherwise. #
+# (Assumes the table is sorted!) #
+(
+    WHILE (next OF ft ISNT REF FREQTABLE(NIL)) ANDTH (x OF ft < val) DO
+        # This modifies where ft points (even outside this scope)! #
+        ft := next OF ft
+    OD;
+    IF x OF ft = val THEN
+        f OF ft
+    ELSE
+        0
+    FI
+);
+
+PROC shellsort = (REF []INT vals) VOID:
+(
+    [8]INT gaps := (701, 301, 132, 57, 23, 10, 4, 1);
+    # Anything with 1 works; but Ciura's sequence is fastest known #
+    FOR gap_index FROM LWB gaps TO UPB gaps DO
+        INT gap := gaps[gap_index];
+        FOR i FROM gap + 1 TO UPB vals DO
+            INT tmp := vals[i];
+            INT j := i;
+            # The AND/OR operators do not automatically short-circuit! #
+            # This screwed up my quicksort for the longest time >:( #
+            # Use GNU extensions ANDTH/OREL instead. #
+            WHILE j > gap ANDTH vals[j - gap] > tmp DO
+                vals[j] := vals[j - gap];
+                j -:= gap
+            OD;
+            vals[j] := tmp
         OD
     OD
+);
+
+PROC quicksort = (REF []INT vals, INT lower, upper) VOID:
+(
+    # sorts the list in place #
+    IF lower < upper THEN
+        INT pivot := vals[lower], left := lower + 1, right := upper;
+        WHILE left <= right DO
+            # leave elements that are already in the right place #
+            WHILE left <= right ANDTH vals[left] <= pivot DO
+                left +:= 1
+            OD;
+            WHILE left <= right ANDTH vals[right] >= pivot DO
+                right -:= 1
+            OD;
+            # swap out-of-order elements into place #
+            IF left < right THEN
+                INT tmp := vals[left];
+                vals[left] := vals[right];
+                vals[right] := tmp
+            FI
+        OD;
+        vals[lower] := vals[right];
+        vals[right] := pivot;
+        quicksort(vals, lower, right - 1);
+        quicksort(vals, right + 1, upper)
+    FI
 );
 
 BEGIN
@@ -25,11 +93,21 @@ BEGIN
         get(fp, a); ys[i] := a
     OD;
     close(fp);
-    bubblesort(xs, linecount);
-    bubblesort(ys, linecount);
+    quicksort(xs, LWB xs, UPB xs);
+    quicksort(ys, LWB ys, UPB ys);
+    # note that ys_ft will stay sorted #
+    # so we should have amortised O(n) lookup #
+    FREQTABLE ys_ft := FREQTABLE(0, 0, NIL);
     INT total := 0;
-    FOR i TO linecount DO
-        total +:= ABS(xs[i] - ys[i])
+    FOR i FROM LWB xs TO UPB xs DO
+        total +:= ABS(xs[i] - ys[i]);
+        ft_inc(ys_ft, ys[i])
+    OD;
+    print((total, newline));
+
+    total := 0;
+    FOR i FROM LWB xs TO UPB xs DO
+        total +:= xs[i]*ft_dropuntil(ys_ft, xs[i])
     OD;
     print((total, newline))
 END
