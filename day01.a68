@@ -4,14 +4,16 @@ MODE FREQTABLE = STRUCT(
     REF FREQTABLE next
 );
 
-PROC ft_inc = (REF FREQTABLE ft, INT val) VOID:
+PROC ft_inc = (REF FREQTABLE ft, INT val) REF FREQTABLE:
+# Returns the incremented row #
 (
     REF FREQTABLE curr := ft;
     WHILE (next OF curr ISNT REF FREQTABLE(NIL)) ANDTH (x OF curr /= val) DO
         curr := next OF curr
     OD;
     IF x OF curr = val THEN
-        f OF curr +:= 1
+        f OF curr +:= 1;
+        curr
     ELSE
         # allocate memory for a new freqtable row on the heap #
         next OF curr := HEAP FREQTABLE := (val, 1, NIL)
@@ -92,15 +94,23 @@ FOR i TO linecount DO
     get(fp, a); ys[i] := a
 OD;
 close(fp);
+
 quicksort(xs, LWB xs, UPB xs);
 quicksort(ys, LWB ys, UPB ys);
-# note that ys_ft will stay sorted #
-# so in total, all combined lookups should be O(n) amortised #
+# Note that since y values are sorted,
+  keeping track of the last-appended frequency table row
+  ensures that inserting all y values takes only O(n).
+  Additionally, by keeping both x values and the table sorted,
+  looking up every table value takes only O(n) amortised
+  (so long as we keep track of the last-read table row,
+  or remove table rows when they're no longer required!)
+#
 FREQTABLE ys_ft := FREQTABLE(0, 0, NIL);
+REF FREQTABLE current_row := ys_ft;
 INT total := 0;
 FOR i FROM LWB xs TO UPB xs DO
     total +:= ABS(xs[i] - ys[i]);
-    ft_inc(ys_ft, ys[i])
+    current_row := ft_inc(current_row, ys[i])
 OD;
 print((total, newline));
 
