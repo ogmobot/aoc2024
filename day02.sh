@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+heol_bin="uxncli $HOME/.local/bin/heol.rom"
 
 # Heol can't always deal with long lists.
 # Rather than attempting to read a 1000-element-long list,
@@ -12,7 +13,7 @@ mkfifo $heol_in
 #sleep 1 > $heol_in &
 
 # Count the number of #t (safe) the program outputs
-heol 2>&1 < $heol_in | grep -c "#t$" &
+$heol_bin 2>&1 < $heol_in | grep -c "#t$" &
 heol_pid=$!
 # Load program file
 cat day02.heol > $heol_in
