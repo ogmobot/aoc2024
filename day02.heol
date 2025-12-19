@@ -1,16 +1,5 @@
-(define list (lambda args args))
 (define cadr (lambda (xs) (car (cdr xs))))
-(define fold (lambda (f acc xs)
-    (if xs
-        (fold f (f (car xs) acc) (cdr xs))
-        acc)))
-(define nth (lambda (xs i)
-    (if (eq? i 0)
-        (car xs)
-        (nth (cdr xs) (- i 1)))))
-
-(define <0  (lambda (x) (< 4095 x)))
-(define abs (lambda (x) (if (<0 x) (- 0 x) x)))
+(define bool->int (lambda (b) (if b 1 0)))
 
 (define wrongup (lambda (xs i)
     (if (cdr xs)
@@ -37,9 +26,6 @@
              (8 6 4 4 1)
              (1 3 6 7 9)))
 
-(define solve (lambda (xs)
-    (fold
-        (lambda (x acc) (if (safe? x) (+ 1 acc) acc))
-        0
-        xs)))
-
+(define totals (cons 0 0))
+(define solve! (lambda (xs)
+    (define totals (cons (car totals) (cdr totals)))))

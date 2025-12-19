@@ -5,7 +5,6 @@ heol_bin="uxncli $HOME/.local/bin/heol.rom"
 # Rather than attempting to read a 1000-element-long list,
 # go through the input line-by-line.
 heol_in=/tmp/data.pipe_in
-rm -f $heol_in
 mkfifo $heol_in
 
 # If heol is upset that there's no available data,
@@ -18,7 +17,7 @@ heol_pid=$!
 # Load program file
 cat day02.heol > $heol_in
 # Send each line of file to program
-while read p; do
-    echo "(safe? '(" $p "))" > $heol_in
-done < input02.txt
+awk '{ printf("(safe? %c(%s))", 39, $0) }' input02.txt > $heol_in
+
 wait $heol_pid
+rm -f $heol_in
