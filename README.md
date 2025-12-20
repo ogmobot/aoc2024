@@ -15,3 +15,19 @@ Strictly speaking, it wasn't necessary to implement a frequency table to solve p
 **ALGOL 68**: the great-uncle of the famous C.
 
 **Syntax Highlight**: `OF` to lookup a field within a structure (or structure reference) -- very English-like!
+
+Day 02: [Heol](https://wiki.xxiivv.com/site/heol.html)
+------------------------------------------------------
+This is my third time writing a program for the [Varvara](https://wiki.xxiivv.com/site/varvara.html) virtual machine. (The first two times were in uxntal assembly [2022, Day 6] and UF [2023, Day 16]. Will I have to use the Sunflower BASIC port next time???) The Heol system is very much a built-for-fun (or proof-of-concept) project, and still has a lot of rough edges. The way it utilises the Varvara machine's return stack means that there's a limit to how far recursion can take the program. The stack can contain up to 256 bytes (so 128 addresses); most of my functions go 5 or 6 nested brackets deep, each of which pushes an address to the stack; so even with a little bit of tail optimisation, that's only 25 or so nested function calls. This is fine for some languages, but a bit limiting for a LISP. I made an attempt to modify the language's source to allow for tail-optimisation of recursive user functions, but didn't get very far. (In retrospect, perhaps I should have modified the language to keep track of return addresses elsewhere in memory, rather than the native uxn return address stack.)
+
+The language also lacks garbage collection, which is a hindrance to getting the entire input into memory. The input contains 6521 integers, each of which costs 4 bytes of memory; and if each one is placed inside a 4-byte cons cell, and those cells are organised inside a thousand-element list (1000 more 4-byte cons cells), that's a total of 56168 bytes (a little more than 85% of the available 65536 bytes of memory). The runtime of ~2222 bytes still fits within the remaining memory, but the program requires making many copies of lists (and once in memory, the lists can't be removed or modified). Without garbage collection, it may well be impossible to solve this problem while keeping the input in RAM.
+
+So, I didn't do that. Instead, I hacked together a bash script to handle input and output (so I guess this is technically a two-language solution). Initially, I wrote an AWK script to change e.g. `1 2 3` to `(solve '(1 2 3))` and piped the entire resulting file into the program. This worked for part 1, but the memory issues meant it wouldn't work for part 2. (If the language eventually gets an extended call stack and garbage collection, I might one day return and use this approach.) Instead, the solution I ended up using runs a separate instance of Heol for each line of input, stores the results in 1000 different files, and finally sums them with a line of AWK (`{ p1 += $1; p2 += $2 } END { print p1; print p2 }`). Spawning and running the 1000 processes takes around 30 seconds. (I think that given the language doesn't yet have a way to even read or write external files, this approach is fair enough for now.)
+
+Heol doesn't support macros yet. If it ever does, it'll make setting up keywords like `cond` and `let` much easier.
+
+One logic bug I had to deal with (i.e. not relating to memory or recursion!) was deciding how to modify a list for Part 2 of the problem. Initially I tried removing only the first offending value from the list, but then an input like `46 43 44 43 42` couldn't be solved. (The first `43` should be removed, but my program saw it as a "safe" transition.) I found this bug by modifying my Python solution to compare each of its results to the Heol result (using something like `os.system("echo (safeish? '($vals)) | heol 2>temp.txt")`).
+
+**Heol**: don't let your memory limits define you!
+
+**Syntax Highlight**: `eq?` to check equality (not very surprising at first, until you learn you'll need it to equate numbers -- there's no `=` operator)
