@@ -7,23 +7,30 @@ heol_bin="uxncli $HOME/.local/bin/heol.rom"
 out_dir=$(mktemp -d)
 heol_pids=()
 
-while read p; do
-    heol_out=$(mktemp -p $out_dir "$p.XXX")
-    echo `cat day02.heol` "(solve '(" $p "))" | $heol_bin 2>"$heol_out" &
+while read input_line; do
+    # Name temp files after input, so grepping for weird output
+    # also finds the input that produced it
+    heol_out=$(mktemp -p $out_dir "$input_line.XXX")
+    # Start Heol, load the day02.heol program, and send it a single input line
+    # (Current method is to echo the entire contents of day02.heol)
+    # (There is almost certainly a nicer way to do this)
+    echo `cat day02.heol` "(solve '(" $input_line "))" \
+        | $heol_bin 2>"$heol_out" &
     heol_pid=$!
     heol_pids+=($heol_pid)
 done < input02.txt
+# The rest of the script will get erratic results if the Heol processes
+# haven't finished running by this point
 for hp in "${heol_pids[@]}"; do
     wait -f $hp
 done
+# If the Heol program doesn't produce output in the form (0 . 0),
+# I want to know about it!!
 grep -L -o "[01]\s\.\s[01]" $out_dir/*
-# 45 44 42 41 39 36 33 29
-# 58 56 55 54 52 51 50 51
-#  5  7 10 12 14 16 18 23
-# 53 54 57 60 61 62 63 67
-# In all cases, it's the value with index 7...
-# Recursive stack overflow issue?
-# (It only happens for whichever function is called second within safeish)
+# 46 43 44 43 42
+# originally wasn't classified as "safeish" but should be.
+# The solver saw the jump 46->43 was fine, so didn't consider
+# removing the 43.
 cat $out_dir/* | grep -o "[01]\s\.\s[01]" | \
     awk -F " . " \
         '{ p1 += $1; p2 += $2 } \
