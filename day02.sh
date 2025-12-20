@@ -19,18 +19,11 @@ while read input_line; do
     heol_pid=$!
     heol_pids+=($heol_pid)
 done < input02.txt
-# The rest of the script will get erratic results if the Heol processes
-# haven't finished running by this point
-for hp in "${heol_pids[@]}"; do
-    wait -f $hp
-done
+wait
 # If the Heol program doesn't produce output in the form (0 . 0),
 # I want to know about it!!
 grep -L -o "[01]\s\.\s[01]" $out_dir/*
-# 46 43 44 43 42
-# originally wasn't classified as "safeish" but should be.
-# The solver saw the jump 46->43 was fine, so didn't consider
-# removing the 43.
+
 cat $out_dir/* | grep -o "[01]\s\.\s[01]" | \
     awk -F " . " \
         '{ p1 += $1; p2 += $2 } \
