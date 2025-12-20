@@ -24,7 +24,6 @@ grep -L -o "[01]\s\.\s[01]" $out_dir/*
 # In all cases, it's the value with index 7...
 # Recursive stack overflow issue?
 # (It only happens for whichever function is called second within safeish)
-ls $out_dir | wc -l
 cat $out_dir/* | grep -o "[01]\s\.\s[01]" | \
     awk -F " . " \
         '{ p1 += $1; p2 += $2 } \
