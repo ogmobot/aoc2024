@@ -5,19 +5,15 @@ heol_bin="uxncli $HOME/.local/bin/heol.rom"
 # when dealing with the puzzle input.
 # Run a seprate instance of Heol for each input line.
 out_dir=$(mktemp -d)
-heol_pids=()
 
 while read input_line; do
     # Name temp files after input, so grepping for weird output
     # also finds the input that produced it
+    # (It would be better to not create 1000 temporary files)
     heol_out=$(mktemp -p $out_dir "$input_line.XXX")
     # Start Heol, load the day02.heol program, and send it a single input line
-    # (Current method is to echo the entire contents of day02.heol)
-    # (There is almost certainly a nicer way to do this)
-    echo `cat day02.heol` "(solve '(" $input_line "))" \
+    echo "(solve '(" $input_line "))" | cat "day02.heol" - \
         | $heol_bin 2>"$heol_out" &
-    heol_pid=$!
-    heol_pids+=($heol_pid)
 done < input02.txt
 wait
 # If the Heol program doesn't produce output in the form (0 . 0),
