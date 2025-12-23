@@ -1,5 +1,6 @@
 (define cadr (lambda (xs) (car (cdr xs))))
 (define bool->int (lambda (b) (if b 1 0)))
+(define list (lambda args args))
 (define sublist (lambda (n xs)
     (if (eq? 0 n) (cdr xs)
         (if (eq? 1 n)
@@ -38,5 +39,4 @@
     (or (safeish-up xs) (safeish-down xs))))
 
 (define solve (lambda (xs)
-    (cons (bool->int (safe? xs))
-          (bool->int (safeish? xs)))))
+    (print (list (bool->int (safe? xs)) (bool->int (safeish? xs)) '\n))))

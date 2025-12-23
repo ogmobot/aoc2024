@@ -8,10 +8,10 @@ heol_bin="uxncli $HOME/.local/bin/heol.rom"
 # Use as standard input file [<] the result of this command [<(...)].
 < <(while read input_line; do
     # Append one line of input to the day02.heol program, then send it to Heol.
-    # Find output lines in the form "(0 . 0)".
-    echo "(solve '(" $input_line "))" \
+    # Pipe to tail to ensure output arrives by line, not by character.
+    echo "(solve '(" "$input_line" "))" \
         | cat "day02.heol" - \
-        | $heol_bin 2>&1 \
-        | grep -o "[01]\s\.\s[01]" &
+        | $heol_bin 2>/dev/null \
+        | tail -1 &
 done < input02.txt; wait) \
-    awk -F " . " '{ p1 += $1; p2 += $2 } END { print p1; print p2 }'
+    awk '{ p1 += $1; p2 += $2 } END { print p1; print p2 }'
