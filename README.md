@@ -31,3 +31,15 @@ One logic bug I had to deal with (i.e. not relating to memory or recursion!) was
 **헐**: don't let your memory limits define you!
 
 **Syntax Highlight**: `eq?` to check equality (not very surprising at first, until you learn you'll need it to equate numbers -- there's no `=` operator)
+
+Day 03: [HolyC](https://holyc-lang.com)
+---------------------------------------
+The nth "C but better" language I've used. HolyC has some interesting quirks: a string literal on its own is interpreted as a `printf` command (which feels nicer than you'd expect); a `switch` command can be given its argument in square brackets to disable bounds-checking (i.e. no `default` case, and segfault on a case that isn't covered); a `case` can span a range of values; no default `int` type (the signed-ness and width must be specified). These changes from C take advantage of gaps in the language, or slightly improve its efficiency; I can see why its author, Terry Davis, made these changes.
+
+The language is very close to C, and I imagine anyone familiar with C would find it easy to write HolyC (especially now that it has been ported beyond its original environment of TempleOS). The different library bindings might be a minor hiccough. The original intent of the language was to be a hybrid scripting/systems language; HolyC is the language of the TempleOS shell, and programs and functions can be written and called directly from the shell. I'm not convinced of its usefulness for scripting, but writing a program like this one felt just a little nicer than writing in C. (Perhaps I should have delayed using this language for a harder task!)
+
+After initially solving this problem using Python's regex library, I wanted to try a lower-level approach. Hence, a finite-state automaton. (HolyC doesn't have a regex library, but technically I could have used the C Standard Library version.) The language's `FileRead` function is extraordinarily useful for this specific task -- it simply loads the entire contents of a file into memory, as a contiguous range of eight-bit unsigned integers/characters. (This allocates memory which must be `Free`d later.) Then it's just a matter of traversing the data and keeping track of state. (States are stored as multiples of 128 to accomodate table lookups of state + ASCII value. HolyC doesn't appear to have `enum`s, so I've `#define`d the values instead.)
+
+**HolyC**: a little nicer than C.
+
+**Syntax Highlight**: `U0` (i.e. unsigned integer of 0 bits; HolyC's `void` type)
