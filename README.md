@@ -10,7 +10,7 @@ Another little annoyance was that although statements within a block are separat
 
 I can see similarities between ALGOL and other roughly cotemporaneous languages, like FORTRAN, Pascal and perhaps even BASIC. I've read that C's most direct ancestor is BCPL, which descended from ALGOL 60 (rather than ALGOL 68), but there's certainly a family resemblance.
 
-Strictly speaking, it wasn't necessary to implement a frequency table to solve part 2 of this problem. However, it's (in theory) a little more time efficient, reducing the solution from $O(n^2)$ to $O(n\log n)$-ish (assuming traversal of the frequency table doesn't take $O(n)$ every time). It could be made more efficient with a tree-like structure or hash table instead. I just thought I'd mess around with pointers a little, since I probalby won't ever be coming back to this language.
+Strictly speaking, it wasn't necessary to implement a frequency table to solve part 2 of this problem. However, it's (in theory) a little more time efficient, reducing the solution from $O(n^2)$ to $O(n\log n)$-ish (assuming traversal of the frequency table doesn't take $O(n)$ every time). It could be made more efficient with a tree-like structure or hash table instead. I just thought I'd mess around with pointers a little, since I probably won't ever be coming back to this language.
 
 **ALGOL 68**: the great-uncle of the famous C.
 
@@ -43,3 +43,17 @@ After initially solving this problem using Python's regex library, I wanted to t
 **HolyC**: a little nicer than C.
 
 **Syntax Highlight**: `U0` (i.e. unsigned integer of 0 bits; HolyC's `void` type)
+
+Day 04: [Gleam](https://gleam.run)
+----------------------------------
+I had high hopes for Gleam, but it didn't quite live up to the hype. I've actually attempted to complete a task from a previous year in Gleam, but the language wasn't really ready to solvec puzzles at that point in its development (or perhaps I gave up too soon). Don't get me wrong; it's a nice language with ML-like syntax and conveniences like pattern-matching and type-checking. But it comes with its fair share of annoyances, too.
+
+The first annoyance was that program files can't be run like scripts; they must be part of a project, complete with `gleam.toml`, `manifest.toml` and `README.md` files. (Incidently, build instructions for my program: set up a new project with `gleam new <project name>`; copy the contents of my .gleam file into `<project name>/src/<project name>.gleam`; copy the puzzle input to `<project name>/input04.txt`; then run the program with `gleam run`.) I understand it's bad practice to set up an application as a hodge-podge mix of random program files, but sometimes you just need to run a tiny program! A second annoyance was that function names cannot contain uppercase letters (as I discovered when attempting to name a function something like `searchXMAS`). I can understand not _starting_ the function name with capital letters -- ML-like languages sometimes reserve Title Case for types -- but removing them altogether (and incidentally preventing the use of camelCase) seems weird. A third annoyance is the lack of string interpolation; to write to stdout the value of an integer, one must first `import gleam/int`, so that the `int.to_string` function can be used. (I should mention, however, that `echo` is also available for debugging purposes.)
+
+The type-checker seems to do a good job inferring types without too many annotations, which is nice. (If the type-checker can't manage, it'll let you know not with `Please add type annotations` but `Please add some type annotations so we can continue`. I'm not sure whether I feel condescended to.)
+
+The program itself is pretty straightforward. For every possible starting position, check for the target in every possible orientation. I was hoping that the program would take advantage of the data structures' immutability and the massive parallelisation that the BEAM virtual machine allows -- the reason I chose Gleam for this task in the first place -- but based on the "user time" output of `time`, this does not appear to be the case. Oh well.
+
+**Gleam**: it's not bad, but it could be better.
+
+**Syntax Highlight**: `<>` (string concatenation)
