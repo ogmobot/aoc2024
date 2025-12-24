@@ -52,7 +52,7 @@ The first annoyance was that program files can't be run like scripts; they must 
 
 The type-checker seems to do a good job inferring types without too many annotations, which is nice. (If the type-checker can't manage, it'll let you know not with `Please add type annotations` but `Please add some type annotations so we can continue`. I'm not sure whether I feel condescended to.)
 
-The program itself is pretty straightforward. For every possible starting position, check for the target in every possible orientation. I was hoping that the program would take advantage of the data structures' immutability and the massive parallelisation that the BEAM virtual machine allows -- the reason I chose Gleam for this task in the first place -- but based on the "user time" output of `time`, this does not appear to be the case. Oh well.
+The program itself is pretty straightforward. For every possible starting position, check for the target in every possible orientation. I was hoping that the program would take advantage of the data structures' immutability and the massive parallelisation that the BEAM virtual machine allows -- the reason I chose Gleam for this task in the first place -- and based on the "user time" output of `time`, this is taking place to some extent. It's difficult to tell how well it's working, though, or how to improve how parallelisable the program is.
 
 **Gleam**: it's not bad, but it could be better.
 
