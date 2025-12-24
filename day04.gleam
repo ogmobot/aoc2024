@@ -18,8 +18,8 @@ fn string_to_grid(
     // "There is notable overhead on this function"
     case car_cdr {
         Error(_)            -> grid // empty string
-        Ok(#("\n", rest))   -> string_to_grid(rest, grid, row + 1, 0)
-        Ok(#(x,    rest))   -> string_to_grid(rest, grid, row, col + 1)
+        Ok(#("\n", cdr))    -> string_to_grid(cdr, grid, row + 1, 0)
+        Ok(#(x,    cdr))    -> string_to_grid(cdr, grid, row, col + 1)
                                 |> dict.insert(#(row, col), x)
     }
 }
@@ -35,9 +35,8 @@ fn check_word(
     case word, dict.get(grid, #(r, c)) {
         [], _       -> True  // no letters left (base recursion case)
         _, Error(_) -> False // word goes out of grid
-        [car, ..cdr], Ok(x) if car == x -> { // next letter matches
-            check_word(grid, cdr, r+dr, c+dc, dr, dc)
-        }
+        [car, ..cdr], Ok(x) if car == x -> // next letter matches
+            check_word(grid, cdr, r + dr, c + dc, dr, dc)
         _, _        -> False // next letter doesn't match
     }
 }
@@ -51,22 +50,46 @@ fn wordsearch(grid: dict.Dict(#(Int, Int), String), xmas: String) -> Int {
     )
     list.map(dirs, fn (dir) {
         let #(dr, dc) = dir
-        let rows_cols = cartesian_product(
+        let starting_points = cartesian_product(
             list.range(0, maxr),
             list.range(0, maxc)
         )
-        list.count(rows_cols, fn (r_c) {
+        list.count(starting_points, fn (r_c) {
             let #(r, c) = r_c
             check_word(grid, xmas_list, r, c, dr, dc)
         })
     })
     |> list.fold(0, fn (a, b) {a + b})
+}
 
+fn crossword(grid: dict.Dict(#(Int, Int), String), mas: String) -> Int {
+    let assert [a, mid, b] = string.to_graphemes(mas)
+    let centres = dict.to_list(grid)
+        |> list.filter(fn (pair: #(_, String)) {pair.1 == mid})
+        |> list.map(fn (pair) {pair.0})
+    list.count(centres, fn (centre: #(Int, Int)) {
+        let #(r, c) = centre
+        let #(nw, ne, sw, se) = #(
+            dict.get(grid, #(r - 1, c - 1)),
+            dict.get(grid, #(r - 1, c + 1)),
+            dict.get(grid, #(r + 1, c - 1)),
+            dict.get(grid, #(r + 1, c + 1))
+        )
+        case nw, ne, sw, se {
+            Ok(p), Ok(q), Ok(r), Ok(s) -> {
+                   {p == a && q == a && r == b && s == b}
+                || {p == a && q == b && r == a && s == b}
+                || {p == b && q == a && r == b && s == a}
+                || {p == b && q == b && r == a && s == a}
+            }
+            _, _, _, _ -> False
+        }
+    })
 }
 
 pub fn main() {
-    let assert Ok(data) = simplifile.read(from: "../input04.txt")
+    let assert Ok(data) = simplifile.read("input04.txt")
     let grid = string_to_grid(data, dict.new(), 0, 0)
     io.println(int.to_string(wordsearch(grid, "XMAS")))
+    io.println(int.to_string(crossword(grid, "MAS")))
 }
-
