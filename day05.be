@@ -20,17 +20,11 @@ def middle(xs)
     return xs[xs.size()/2]
 end
 
-def swap(xs, i, j)
-    tmp = xs[i]
-    xs[i] = xs[j]
-    xs[j] = tmp
-end
-
 def read_number_lists(fp, sep)
     result = []
     line = fp.readline()
     while line != "" && line != "\n"
-        result.push(map1(number, (string.split(line, sep))))
+        result.push(map1(number, string.split(line, sep)))
         line = fp.readline()
     end
     return result
