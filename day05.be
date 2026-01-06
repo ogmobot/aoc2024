@@ -58,18 +58,17 @@ def make_sorter(rules)
                 sub_rules.push(rule)
             end
         end
-        # basically bubble sort
-        done = false
-        while !done
-            done = true
-            for j : xs.keys()
-                for i : 0 .. j - 1
-                    if sub_rules.find([xs[j], xs[i]]) != nil
-                        swap(xs, i, j)
-                        done = false
-                        break
-                    end
+        # basically shell sort
+        gaps = [701, 301, 132, 57, 23, 10, 4, 1]
+        for gap : gaps
+            for i : gap .. xs.size() - 1
+                tmp = xs[i]
+                j = i
+                while j >= gap && (!is_ordered(sub_rules, [xs[j - gap], tmp]))
+                    xs[j] = xs[j - gap]
+                    j -= gap
                 end
+                xs[j] = tmp
             end
         end
         return xs
@@ -81,37 +80,6 @@ def main()
     rules      = read_number_lists(input_file, "|")
     page_lists = read_number_lists(input_file, ",")
     input_file.close()
-    _rules = [
-        [47,53],
-        [97,13],
-        [97,61],
-        [97,47],
-        [75,29],
-        [61,13],
-        [75,53],
-        [29,13],
-        [97,29],
-        [53,29],
-        [61,53],
-        [97,53],
-        [61,29],
-        [47,13],
-        [75,47],
-        [97,75],
-        [47,61],
-        [75,61],
-        [47,29],
-        [75,13],
-        [53,13]
-    ]
-    _page_lists = [
-        [75,47,61,53,29],
-        [97,61,53,29,13],
-        [75,29,13],
-        [75,97,47,61,53],
-        [61,13,29],
-        [97,13,75,29,47]
-    ]
  
     sortie = make_sorter(rules)
     soln =

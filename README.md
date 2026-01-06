@@ -64,7 +64,7 @@ Berry is a cool little scripting language. It feels like a cross between Python 
 
 One of Berry's big "selling points" is its embeddability within low-power devices (and therefore its ability to interface with C), but I haven't tested this aspect of the language.
 
-My Python solution for this task uses the `cmp_to_key` function from the `functools` module, which makes sorting the list so easy it almost feels like cheating! The Berry solution uses bubble sort instead (which is obviously a lot slower).
+My Python solution for this task uses the `cmp_to_key` function from the `functools` module, which makes sorting the list so easy it almost feels like cheating! The Berry solution uses shell sort instead (and runs a little slower).
 
 **Berry**: it's pretty neat.
 
