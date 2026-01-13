@@ -113,27 +113,29 @@ fn main() {
         return
     }
     grid := text_to_grid(text)
+    mut obstacle_opts := []int{}
 
     // Part 1
     p := find_path(grid, none)
     if p is Terminal {
         println("${p.visited.len}")
-        // Part 2
-        /*
-        mut loops := 0
-        for o in p.visited {
-            if o == grid.start_index {
-                continue
-            }
-            pp := find_path(grid, o)
-            if pp is Loop {
-                loops += 1
-            }
-        }
-        println("${loops}")
-        */
+        obstacle_opts << p.visited
     } else {
         eprintln("guard already in infinite loop!")
         return
     }
+
+    // Part 2
+    mut loops := 0
+    for o in obstacle_opts {
+        if o == grid.start_index {
+            continue
+        }
+        pp := find_path(grid, ?int(o))
+        if pp is Loop {
+            loops += 1
+        }
+    }
+    println("${loops}")
+    // takes ~70s
 }
