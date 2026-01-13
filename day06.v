@@ -106,6 +106,10 @@ fn find_path(grid Grid, obstacle ?int) Path {
     return Terminal {[]}
 }
 
+fn is_loop(grid Grid, obstacle int) bool {
+    return (find_path(grid, ?int(obstacle)) is Loop)
+}
+
 fn main() {
     filename := "input06.txt"
     text := os.read_file(filename) or {
@@ -119,23 +123,20 @@ fn main() {
     p := find_path(grid, none)
     if p is Terminal {
         println("${p.visited.len}")
-        obstacle_opts << p.visited
+        obstacle_opts = unsafe {p.visited}
     } else {
         eprintln("guard already in infinite loop!")
         return
     }
 
     // Part 2
-    mut loops := 0
+    mut threads := []thread bool{}
     for o in obstacle_opts {
         if o == grid.start_index {
             continue
         }
-        pp := find_path(grid, ?int(o))
-        if pp is Loop {
-            loops += 1
-        }
+        threads << spawn is_loop(grid, o)
     }
-    println("${loops}")
-    // takes ~70s
+    result := threads.wait()
+    println("${result.filter(it).len}")
 }
