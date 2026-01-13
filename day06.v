@@ -14,9 +14,6 @@ struct Grid {
     start_facing Facing
 }
 
-fn lookup(grid Grid, row int, col int) char {
-    return grid.contents[((grid.width + 1) * row) + col]
-}
 fn travel(grid Grid, facing Facing, from_pos int) int {
     // returns -1 if out of bounds
     mut result := 0
