@@ -74,7 +74,7 @@ Day 06: [V](https://vlang.io)
 -----------------------------
 V feels like all the good parts of Go and all the good parts of Rust wrapped up together. (It's like a better version of a better version of C.) Threads are a built-in type, like in Go, and can be spawned with the `spawn` keyword. The type system can handle complicated composite types, like in Rust, and the compiler will similarly ensure type-correctness. It also has conveniences like anonymous functions, `enum` types and immutability by default. It's purportedly only version 0.5.0, but it seems a lot more capable and mature than many of the other languages I've used in the past.
 
-The version of the program I've uploaded is multithreaded and can be compiled with `v -prod -cflags -march=native day06.v` (or similar). It takes just 10 seconds to run on my VM's 2-core CPU -- much faster than the 110s of my Python implementation! -- and should scale up with CPU cores. The compiler also has the ability to e.g. compile with debugging information, or to output a C file.
+The version of the program I've uploaded is multithreaded and can be compiled with `v -prod -cc gcc -cflags "-march=native -O2" day06.v` (or similar). It takes just 10 seconds to run on my VM's 2-core CPU -- much faster than the 110s of my Python implementation! -- and should scale up with CPU cores. The compiler also has the ability to e.g. compile with debugging information, or to output a C file.
 
 All that said, the language is not perfect (nor completely finished), and I managed to trigger a compiler bug or two when introducing optional types into my solution. This language seems very solid and a good option for any kind of systems programming that involves threads (or that doesn't).
 
