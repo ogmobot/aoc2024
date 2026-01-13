@@ -1,4 +1,5 @@
 import os
+import arrays
 
 enum Facing { right down left up }
 
@@ -106,8 +107,17 @@ fn find_path(grid Grid, obstacle ?int) Path {
     return Terminal {[]}
 }
 
-fn is_loop(grid Grid, obstacle int) bool {
-    return (find_path(grid, ?int(obstacle)) is Loop)
+fn count_loops(grid Grid, obstacle_list []int) int {
+    mut total := 0
+    for obstacle in obstacle_list {
+        if obstacle == grid.start_index {
+            continue
+        }
+        if find_path(grid, ?int(obstacle)) is Loop {
+            total += 1
+        }
+    }
+    return total
 }
 
 fn main() {
@@ -122,7 +132,7 @@ fn main() {
     // Part 1
     p := find_path(grid, none)
     if p is Terminal {
-        println("${p.visited.len}")
+        println(p.visited.len)
         obstacle_opts = unsafe {p.visited}
     } else {
         eprintln("guard already in infinite loop!")
@@ -130,13 +140,18 @@ fn main() {
     }
 
     // Part 2
-    mut threads := []thread bool{}
-    for o in obstacle_opts {
-        if o == grid.start_index {
-            continue
+    nthreads := 8 // fiddling with this may improve performance
+    chunk_size := (obstacle_opts.len / nthreads) + 1
+    threads := arrays.chunk[int](obstacle_opts, chunk_size).map(
+        fn [grid] (obstacles []int) thread int {
+            return spawn count_loops(grid, obstacles)
         }
-        threads << spawn is_loop(grid, o)
-    }
+    )
     result := threads.wait()
-    println("${result.filter(it).len}")
+    println(
+        arrays.reduce[int](
+            result,
+            fn (x int, y int) int {return x + y}
+        ) or {-1}
+    )
 }
