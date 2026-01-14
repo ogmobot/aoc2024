@@ -1,0 +1,65 @@
+#!/usr/bin/env amber
+
+import {
+    ends_with, join, parse_int, slice, split, split_words, trim
+} from "std/text"
+import { array_pop, array_shift } from "std/array"
+
+fun construct_line(target: Text, vals: [Text]): Text {
+    return target + ": " + join(vals, " ")
+}
+
+fun is_valid(orig_line: Text, is_p2: Bool): Bool? {
+    // Recursion not yet supported... :/ recurse manually instead
+    // Keep recursion call stack as array of strings
+    // (nested arrays not supported)
+    // e.g. ["123: 12 3"] -> ["12: 12", "41: 12", "120: 12"] etc.
+    let args = [orig_line]
+    while len(args) > 0 {
+        let line = array_shift(args) failed {return false}
+        // evidently the "while len(args) > 0" isn't enough...
+        let parts = split(line, ":")
+        let target = parts[0]
+        let vals = split_words(trim(parts[1]))
+        if len(vals) == 1 {
+            if target == vals[0]:
+                return true
+        } else {
+            let last = vals[-1]
+            let remaining = vals[0..len(vals)-1]
+            if is_p2 and ends_with(target, last):
+                args = args + [construct_line(
+                    slice(target, 0, len(target)-len(last)),
+                    remaining
+                )]
+            if parse_int(target)? % parse_int(last)? == 0:
+                args = args + [construct_line(
+                    (parse_int(target)? / parse_int(last)?) as Text,
+                    remaining
+                )]
+            if parse_int(target)? - parse_int(last)? >= 0:
+                args = args + [construct_line(
+                    (parse_int(target)? - parse_int(last)?) as Text,
+                    remaining
+                )]
+            join(args, ",") // removing this makes the program fail???
+        }
+    }
+    return false
+}
+
+main {
+    let total_1 = 0
+    let total_2 = 0
+    for line in lines("input07.txt") {
+        let parts = split(line, ": ")
+        if is_valid(line, false)?:
+            total_1 += parse_int(split(line, ": ")[0])?
+        if is_valid(line, true)?:
+            total_2 += parse_int(split(line, ": ")[0])?
+    }
+    echo total_1
+    echo total_2
+}
+
+// example: expect 3749, 11387
