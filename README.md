@@ -95,3 +95,15 @@ At almost 25 minutes, this is one of my slowest programs that solves the problem
 **Amber**: built for comfort, not for speed.
 
 **Syntax Highlight**: `if { cond: a cond: b }` ("if-chain" statement behaves like switch/case)
+
+Day 08: [Grace](http://gracelang.org)
+-------------------------------------
+Grace is a nice language, but it was a headache to get working. After running into a number of issues attempting to install the Kernan implementation, I instead tried the Minigrace implementation (which transpiles to JavaScript); but this, too, had issues. For instance, `minigrace-js` (the transpiler) will crash unless it has access to `compiler-js` in the same directory, but that file isn't transferred there by `make install`. Additionally, the transpiler requires the `$GRACE_MODULE_PATH` environment variable to be set, but evidently doesn't check it for modules -- I had to manually modify `compiler-js` to get it to access that environment variable. (`pathArray || modulePathArray` => `pathArray.concat(modulePathArray)`.)
+
+With those annoyances out of the way, the language was fine. It seems to have taken some inspiration from Smalltalk. It's very object-oriented and supports methods with multi-part names, like `point2Dx(_)y(_)` to create a point with given $x$ and $y$ values; and control structures work by passing blocks of code to given "keywords" (hence `if (cond) then {block}` and `while {cond} do {block}`, since the `while` condition may need to be evaluated multiple times). One of its primary purposes appears to be teaching OO principles in an academic setting. I think it's likely a good fit for that purpose, but I don't think I would teach it as a first language because of its (sometimes subtle) differences from the syntax of better-known languages.
+
+Grace appears to have a very rich type system, which I didn't make much use of. (Type annotations seem to be optional anyway.) The built-in `Point` data type, and its associated operations, provided a very convenient way to solve this problem. I represented both the problem input and its solution as generic (typeless?) objects, in a way that feels reminiscent of JavaScript Objects.
+
+**Grace**: a modern Smalltalk.
+
+**Syntax Highlight**: `@` (infix operator to combine two Numbers into a Point)
