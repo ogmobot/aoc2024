@@ -82,11 +82,6 @@ method solve(inputData) {
     }
 }
 
-method getHarmonics(inputData) {
-    var harmonics:Set[[Point]] := set.empty
-    return harmonics
-}
-
 method main(fname) {
     def inputData = parseInput(fname)
     def solution = solve(inputData)
