@@ -114,7 +114,7 @@ The n+1th "C but better" language I've used. Objective-C feels weird. Just like 
 
 I could have written this program only using C types, but where would the fun in that be? I've used many different types of object instead. (And memory-managed Lists are much easier to deal with than manually malloc-ing linked lists or dynamic arrays.)
 
-For this problem, Objective-C solution uses a someone nicer method than my Python solution. It still takes a few seconds to run, but this is waaay faster than the Python version.
+For this problem, Objective-C solution uses a much nicer method than my Python solution, using pointers to keep track of free chunks of space. It's waaay faster, too.
 
 **Objective-C**: the child of C and Smalltalk.
 
