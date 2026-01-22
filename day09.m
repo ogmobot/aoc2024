@@ -222,54 +222,17 @@ const int FILESIZELIMIT = 10;
 
 // == Functions ==
 
-NSMutableArray *dataToFileSystem1(NSConstantString *data) {
-    // TODO use FSObj instead
-    NSMutableArray *fs = [NSMutableArray array];
+FSObj *dataToFileSystem1(NSConstantString *data) {
+    FSObj *fs = [FSObj create];
     for (int i = 0; i < [data length]; i++) {
         char val = [data characterAtIndex: i] - '0';
-        if (val < 0 || val >= FILESIZELIMIT) { continue; }
-        for (char j = 0; j < val; j++) {
-            [fs addObject:
-                [NSNumber numberWithInt: (i % 2 == 0 ? (i / 2) : FREE)]];
-        }
-    }
-    return fs;
-}
-
-void compactor1(NSMutableArray *fs) {
-    int ptr = 0;
-    while (
-        ptr < [fs count]
-        && [[fs objectAtIndex: ptr] intValue] != FREE
-    ) {
-        ptr++;
-    }
-
-    while (ptr < [fs count]) {
-        if ([[fs lastObject] intValue] == FREE) {
-            [fs removeLastObject];
-        } else {
-            [fs replaceObjectAtIndex: ptr withObject: [fs lastObject]];
-            [fs removeLastObject];
-            while (
-                ptr < [fs count]
-                && [[fs objectAtIndex: ptr] intValue] != FREE
-            ) {
-                ptr++;
+        if (val >= 0 && val < FILESIZELIMIT) {
+            for (char j = 0; j < val; j++) {
+                [fs appendFile: (i % 2 == 0 ? (i / 2) : FREE) ofSize: 1];
             }
         }
     }
-    return;
-}
-
-long checksum1(NSMutableArray *fs) {
-    long total = 0;
-    for (int i = 0; i < [fs count]; i++) {
-        int item = [[fs objectAtIndex: i] intValue];
-        // After compacting, there's no empty space remaining
-        total += i * item;
-    }
-    return total;
+    return fs;
 }
 
 FSObj *dataToFileSystem2(NSConstantString *data) {
@@ -292,9 +255,9 @@ int main(void) {
             error: (NSError **) nil
         ];
         @autoreleasepool {
-            NSMutableArray *fs1 = dataToFileSystem1(data);
-            compactor1(fs1);
-            NSLog(@"%ld", checksum1(fs1));
+            FSObj *fs1 = dataToFileSystem1(data);
+            [fs1 compact];
+            NSLog(@"%ld", [fs1 checksum]);
             // Example should give 1928.
         }
         @autoreleasepool {
