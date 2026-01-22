@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 
 const int FREE = -1;
+const int FILESIZELIMIT = 10;
 
 // == Interfaces ==
 
@@ -17,7 +18,6 @@ const int FREE = -1;
 @property (assign, readwrite) int size;
 @property (assign, readwrite) bool hasMoved;
 - (id) init;
-- (bool) boolValue;
 + (instancetype) newFile:(int) i ofSize:(int) n;
 @end
 
@@ -49,9 +49,6 @@ const int FREE = -1;
     self = [super init];
     return self;
 }
-- (bool) boolValue {
-    return true;
-}
 + (instancetype) newFile:(int) i ofSize:(int) n {
     FileObj *result = [[FileObj alloc] init];
     result.fileId = i;
@@ -74,8 +71,9 @@ const int FREE = -1;
         firstFile = nil;
         lastFile = nil;
         freePtrs = [NSMutableArray array];
-        for (int i = 0; i < 10; i++) {
-            [freePtrs addObject: @false];
+        FileObj *dummy = [FileObj newFile: FREE ofSize: 0];
+        for (int i = 0; i < FILESIZELIMIT; i++) {
+            [freePtrs addObject: dummy];
         }
     }
     return self;
@@ -84,8 +82,9 @@ const int FREE = -1;
     if (size == 0) { return; }
     FileObj *newFile = [FileObj newFile: fileId ofSize: size];
     if (fileId == FREE) {
+        FileObj *dummy = [freePtrs objectAtIndex: 0];
         for (int i = 1; i <= size; i++) {
-            if (![[freePtrs objectAtIndex: i] boolValue]) {
+            if ([freePtrs objectAtIndex: i] == dummy) {
                 [freePtrs replaceObjectAtIndex: i withObject: newFile];
             }
         }
@@ -98,20 +97,19 @@ const int FREE = -1;
         [newFile setLeft: lastFile];
         lastFile = newFile;
     }
-    //[self logAllFiles];
-    //NSLog(@"==");
     return;
 }
 - (bool) moveFileLeft:(FileObj *) f {
-    FileObj *dest = [freePtrs objectAtIndex: [f size]];
+    // Don't try to move the same block twice
     if ([f hasMoved]) { return false; }
-    if (![dest boolValue]) { return false; }
-    // freePtrs become @false if they move to the right of the "working end"
-    //NSLog(@"f id = %d, size = %d", [f fileId], [f size]);
+
+    FileObj *dest = [freePtrs objectAtIndex: [f size]];
+    // Don't try to move block if there's no room for it to the left
+    if (dest == [freePtrs objectAtIndex: 0]) { return false; }
 
     // update the "free" slot
     [dest setSize: ([dest size] - [f size])];
-    // shift file
+    // shift file to just before this "free" slot
     FileObj *newFile = [FileObj newFile: [f fileId] ofSize: [f size]];
     [newFile setHasMoved: true];
     [newFile setLeft: [dest left]];
@@ -139,17 +137,57 @@ const int FREE = -1;
         [self updateFreePtrsUntil: [f left]];
         //[self logAllFiles];
     }
+    // Totally optional, but leaves the FSObj in a "nicer" state
+    [self cleanup];
+    return;
+}
+- (void) cleanup {
+    // Remove rightmost FREE files
+    for (FileObj *p = lastFile; p && [p fileId] == FREE; p = [p left]) {
+        [[p left] setRight: nil];
+        lastFile = [p left];
+    }
+
+    for (FileObj *p = firstFile; p; p = [p right]) {
+        // Remove empty files
+        if ([p size] == 0) {
+            if ([p left]) {
+                [[p left] setRight: [p right]];
+            }
+            if ([p right]) {
+                [[p right] setLeft: [p left]];
+            }
+            continue;
+        }
+        // Reset hasMoved flag
+        [p setHasMoved: false];
+        // Merge FREE files
+        while ([p fileId] == FREE && [p right] && [[p right] fileId] == FREE) {
+            [p setSize: ([p size] + [[p right] size])];
+            if ([[p right] right]) {
+                [[[p right] right] setLeft: p];
+            }
+            [p setRight: [[p right] right]];
+        }
+    }
+
+    // Reset FreePtrs
+    for (int i = 1; i < FILESIZELIMIT; i++) {
+        [freePtrs replaceObjectAtIndex: i withObject: firstFile];
+    }
+    [self updateFreePtrsUntil: lastFile];
     return;
 }
 - (void) updateFreePtrsUntil:(FileObj *) limit {
-    // FreePtrs that would go to the right of limit are set to @false
-    for (int i = 1; i < 10; i++) {
+    // FreePtrs that would go to the right of limit are set to [FreePtrs 0]
+    FileObj *dummy = [freePtrs objectAtIndex: 0];
+    for (int i = 1; i < FILESIZELIMIT; i++) {
         FileObj *p = [freePtrs objectAtIndex: i];
-        if (![p boolValue]) { continue; }
+        if (p == dummy) { continue; }
         while (p && p != limit && ([p fileId] != FREE || [p size] < i)) {
             p = [p right];
         }
-        if (p == limit || p == nil) { p = @false; }
+        if (p == limit || p == nil) { p = dummy; }
         [freePtrs replaceObjectAtIndex: i withObject: p];
     }
     return;
@@ -189,7 +227,7 @@ NSMutableArray *dataToFileSystem1(NSConstantString *data) {
     NSMutableArray *fs = [NSMutableArray array];
     for (int i = 0; i < [data length]; i++) {
         char val = [data characterAtIndex: i] - '0';
-        if (val < 0 || val > 9) { continue; }
+        if (val < 0 || val >= FILESIZELIMIT) { continue; }
         for (char j = 0; j < val; j++) {
             [fs addObject:
                 [NSNumber numberWithInt: (i % 2 == 0 ? (i / 2) : FREE)]];
@@ -238,7 +276,7 @@ FSObj *dataToFileSystem2(NSConstantString *data) {
     FSObj *fs = [FSObj create];
     for (int i = 0; i < [data length]; i++) {
         char val = [data characterAtIndex: i] - '0';
-        if (val >= 0 && val <= 9) {
+        if (val >= 0 && val < FILESIZELIMIT) {
             [fs appendFile: ((i % 2 == 0) ? (i / 2) : FREE) ofSize: val];
         }
     }
@@ -264,7 +302,6 @@ int main(void) {
             [fs2 compact];
             NSLog(@"%ld", [fs2 checksum]);
             // Example should give 2858.
-            //[fs2 logAllFiles];
         }
     }
     return 0;
