@@ -51,7 +51,7 @@ const int FREE = -1;
     return self;
 }
 + (instancetype) newFile:(int) i ofSize:(int) n {
-    FileObj *result = [[FileObj alloc] init];
+    FileObj *result = [[[FileObj alloc] init] autorelease];
     result.fileId = i;
     result.size = n;
     result.left = nil;
@@ -72,7 +72,7 @@ const int FREE = -1;
         filesizeLimit = limit;
         firstFile = nil;
         lastFile = nil;
-        freePtrs = [NSMutableArray array];
+        freePtrs = [NSMutableArray arrayWithCapacity: limit];
         FileObj *dummy = [FileObj newFile: FREE ofSize: 0];
         for (int i = 0; i < limit; i++) {
             [freePtrs addObject: dummy];
@@ -217,7 +217,7 @@ const int FREE = -1;
     }
 }
 + (instancetype) ofSizeLimit:(int) limit {
-    FSObj *result = [[FSObj alloc] initWithSize: limit];
+    FSObj *result = [[[FSObj alloc] initWithSize: limit] autorelease];
     return result;
 }
 @end
