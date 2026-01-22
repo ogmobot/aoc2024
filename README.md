@@ -107,3 +107,15 @@ Grace appears to have a very rich type system, which I didn't make much use of. 
 **Grace**: a modern Smalltalk.
 
 **Syntax Highlight**: `@` (infix operator to combine two Numbers into a Point)
+
+Day 09: [Objective-C](https://developer.apple.com/documentation?language=objc)
+------------------------------------------------------------------------------
+The n+1th "C but better" language I've used. Objective-C feels weird. Just like C++, it's designed to make C object-oriented, but it goes about this in a very different way. C++'s style was to make classes and their methods look like structures and their fields, but Objective-C instead looks like a cross between C and Smalltalk: where C++ uses syntax like `xs.append(x)`, Objective-C uses syntax like `xs appendValue: x`. It's certainly very flexible in how objects are treated; a List can contain an Object of any type (so `@[@"hello", @5, nil]` is fine). Objects tend to be treated very differently from native C types (another difference from C++), which is nice in that you won't get them confused; but this leads to learning essentially two different incompatible syntaxes; one for C, and a Smalltalk-inspired one for Objects.
+
+I could have written this program only using C types, but where would the fun in that be? I've used many different types of object instead. (And memory-managed Lists are much easier to deal with than manually malloc-ing linked lists or dynamic arrays.)
+
+For this problem, Objective-C solution uses a someone nicer method than my Python solution. It still takes a few seconds to run, but this is waaay faster than the Python version.
+
+**Objective-C**: the child of C and Smalltalk.
+
+**Syntax Highlight**: `@` (indicates an object literal, so `9` is `(int) 9` but `@9` is `[NSNumber numberWithInt: 9]`)
