@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 
 const int FREE = -1;
-const int FILESIZELIMIT = 10;
 
 // == Interfaces ==
 
@@ -25,16 +24,18 @@ const int FILESIZELIMIT = 10;
     FileObj *firstFile;
     FileObj *lastFile;
     NSMutableArray *freePtrs;
+    int filesizeLimit;
 }
 @property (assign, readwrite) FileObj *firstFile;
 @property (assign, readwrite) FileObj *lastFile;
 @property (assign, readwrite) NSMutableArray *freePtrs;
-- (id) init;
+@property (assign, readonly) int filesizeLimit;
+- (id) initWithSize:(int) limit;
 - (void) appendFile:(int) fileId ofSize:(int) size;
 - (bool) moveFileLeft:(FileObj*) f;
 - (void) compact;
 - (long) checksum;
-+ (instancetype) create;
++ (instancetype) ofSizeLimit:(int) limit;
 @end
 
 // == Implementations ==
@@ -60,19 +61,20 @@ const int FILESIZELIMIT = 10;
 }
 @end
 
-
 @implementation FSObj
 @synthesize firstFile;
 @synthesize lastFile;
 @synthesize freePtrs;
-- (id) init {
+@synthesize filesizeLimit;
+- (id) initWithSize:(int) limit {
     self = [super init];
     if (self) {
+        filesizeLimit = limit;
         firstFile = nil;
         lastFile = nil;
         freePtrs = [NSMutableArray array];
         FileObj *dummy = [FileObj newFile: FREE ofSize: 0];
-        for (int i = 0; i < FILESIZELIMIT; i++) {
+        for (int i = 0; i < limit; i++) {
             [freePtrs addObject: dummy];
         }
     }
@@ -172,7 +174,7 @@ const int FILESIZELIMIT = 10;
     }
 
     // Reset FreePtrs
-    for (int i = 1; i < FILESIZELIMIT; i++) {
+    for (int i = 1; i < [freePtrs count]; i++) {
         [freePtrs replaceObjectAtIndex: i withObject: firstFile];
     }
     [self updateFreePtrsUntil: lastFile];
@@ -181,7 +183,7 @@ const int FILESIZELIMIT = 10;
 - (void) updateFreePtrsUntil:(FileObj *) limit {
     // FreePtrs that would go to the right of limit are set to [FreePtrs 0]
     FileObj *dummy = [freePtrs objectAtIndex: 0];
-    for (int i = 1; i < FILESIZELIMIT; i++) {
+    for (int i = 1; i < [freePtrs count]; i++) {
         FileObj *p = [freePtrs objectAtIndex: i];
         if (p == dummy) { continue; }
         while (p && p != limit && ([p fileId] != FREE || [p size] < i)) {
@@ -214,8 +216,8 @@ const int FILESIZELIMIT = 10;
         }
     }
 }
-+ (instancetype) create {
-    FSObj *result = [[FSObj alloc] init];
++ (instancetype) ofSizeLimit:(int) limit {
+    FSObj *result = [[FSObj alloc] initWithSize: limit];
     return result;
 }
 @end
@@ -223,10 +225,10 @@ const int FILESIZELIMIT = 10;
 // == Functions ==
 
 FSObj *dataToFileSystem1(NSConstantString *data) {
-    FSObj *fs = [FSObj create];
+    FSObj *fs = [FSObj ofSizeLimit: 2];
     for (int i = 0; i < [data length]; i++) {
         char val = [data characterAtIndex: i] - '0';
-        if (val >= 0 && val < FILESIZELIMIT) {
+        if (val >= 0 && val <= 9) {
             for (char j = 0; j < val; j++) {
                 [fs appendFile: (i % 2 == 0 ? (i / 2) : FREE) ofSize: 1];
             }
@@ -236,10 +238,10 @@ FSObj *dataToFileSystem1(NSConstantString *data) {
 }
 
 FSObj *dataToFileSystem2(NSConstantString *data) {
-    FSObj *fs = [FSObj create];
+    FSObj *fs = [FSObj ofSizeLimit: 10];
     for (int i = 0; i < [data length]; i++) {
         char val = [data characterAtIndex: i] - '0';
-        if (val >= 0 && val < FILESIZELIMIT) {
+        if (val >= 0 && val <= 9) {
             [fs appendFile: ((i % 2 == 0) ? (i / 2) : FREE) ofSize: val];
         }
     }
