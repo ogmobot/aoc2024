@@ -110,7 +110,7 @@ Grace appears to have a very rich type system, which I didn't make much use of. 
 
 Day 09: [Objective-C](https://developer.apple.com/documentation?language=objc)
 ------------------------------------------------------------------------------
-The n+1th "C but better" language I've used. Objective-C feels weird. Just like C++, it's designed to make C object-oriented, but it goes about this in a very different way. C++'s style was to make classes and their methods look like structures and their fields, but Objective-C instead looks like a cross between C and Smalltalk: where C++ uses syntax like `xs.append(x)`, Objective-C uses syntax like `xs appendValue: x`. It's certainly very flexible in how objects are treated; a List can contain an Object of any type (so `@[@"hello", @5, nil]` is fine). Objects tend to be treated very differently from native C types (another difference from C++), which is nice in that you won't get them confused; but this leads to learning essentially two different incompatible syntaxes; one for C, and a Smalltalk-inspired one for Objects.
+The n+1th "C but better" language I've used. Objective-C feels weird. Just like C++, it's designed to make C object-oriented, but it goes about this in a very different way. C++'s style was to make classes and their methods look like structures and their fields, but Objective-C instead looks like a cross between C and Smalltalk: where C++ uses syntax like `xs.append(x)`, Objective-C uses syntax like `[xs appendValue: x]`. It's certainly very flexible in how objects are treated; a List can contain an Object of any type (so `@[@"hello", @5, nil]` is fine). Objects tend to be treated very differently from native C types (another difference from C++), which is nice in that you won't get them confused; but this leads to learning essentially two different incompatible syntaxes; one for C, and a Smalltalk-inspired one for Objects.
 
 I could have written this program only using C types, but where would the fun in that be? I've used many different types of object instead. (And memory-managed Lists are much easier to deal with than manually malloc-ing linked lists or dynamic arrays.)
 
@@ -119,3 +119,17 @@ For this problem, Objective-C solution uses a much nicer method than my Python s
 **Objective-C**: the child of C and Smalltalk.
 
 **Syntax Highlight**: `@` (indicates an object literal, so `9` is `(int) 9` but `@9` is `[NSNumber numberWithInt: 9]`)
+
+Day 10: [OpenSCAD](https://openscad.org)
+----------------------------------------
+Wow, this language is _really_ not designed for this sort of thing! Lacking any way to open arbitrary files, or even read from standard input, I opted to use a script to patch the input into the program file itself before it runs. This language is designed for constructing and rendering 3D models, not running breadth-first searches or computing permutations. It has two primary ways encapsulating processes: functions, which return a value; and modules, which do not. Rather than figuring out compound statements, each of my functions contains a single (often long and complicated) statement. It's technically possible to modify the value of variables, but this generates a warning, so I opted not to do that either.
+
+The result is a messy pile of almost pure functional code, full of list comprehensions, ternary statements and recursion base-case checks. The language lacks features that would make this easier (e.g. data structures like hash tables or memoisation meta-functions) because, well, you'd be very unlikely to need them while generating a 3D model. I am impressed that the language is flexible enough to solve the problem at all (minus opening the input file). Don't try this at home!
+
+I picked OpenSCAD for this problem because it seemed like an appropriate candidate to model in 3D. Run this with `./day10.sh [output filename]` for that model. (It'd be nice to put ramps or something between adjacent nodes...)
+
+I used the same "bottom-up" approach to this problem in both my Python and OpenSCAD solutions. I had at first planned to try a different approach for my non-Python Part 2 solution (viz. memoised recursion) but memoisation was too tricky to figure out within the constrains of the language. The fact that the cache would be list-based (and thus $O(n)$ lookup time) was also unappealing.
+
+**OpenSCAD**: better for modelling than problem-solving.
+
+**Syntax Highlight**: `for (x = xs)` (instantiates the loop variable, like the `:` or `in` of other languages)
