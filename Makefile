@@ -1,5 +1,5 @@
 RUNNABLES := day01.sh day02.sh day03    day04.sh day05.be \
-             day06    day07.sh day08.js day09
+             day06    day07.sh day08.js day09    day10.sh
 
 dummy:
 
@@ -28,5 +28,8 @@ day08.js: day08.grace
 # (run with "grace day08.js")
 
 day09: day09.m
-	gcc `gnustep-config --objc-flags` day09.m -o day09
+	clang `gnustep-config --objc-flags` `gnustep-config --objc-libs` \
+        -lgnustep-base \
+        -I/usr/lib/gcc/x86_64-linux-gnu/11/include/ \
+        day09.m -o day09
 
