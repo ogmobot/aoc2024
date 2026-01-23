@@ -11,9 +11,13 @@ cat <(echo -n "text = \"") \
     > $prog_input
 sed -e '/<<<INPUT_TEXT_HERE>>>/{' -e "r $prog_input" -e 'd }' $orig_prog \
     > $prog_file
-openscad $prog_file -o - --export-format asciistl 2>&1 \
-    | grep "^ECHO: " \
-    | sed "s/^ECHO: //"
+if [ -z "$1" ]; then
+    openscad $prog_file -o - --export-format asciistl 2>&1 \
+        | grep "^ECHO: " \
+        | sed "s/^ECHO: //"
+else
+    openscad $prog_file -D "doModel=true" -o "$1"
+fi
 
 rm $prog_input
 rm $prog_file

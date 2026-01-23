@@ -50,7 +50,7 @@ function findCoordsWithValue(grid, val) =
         [row, col]];
 
 network = buildNetwork(grid);
-zeroes = findCoordsWithValue(grid, 0);
+trailheads = findCoordsWithValue(grid, PATH_START);
 
 // Part 1
 
@@ -77,9 +77,6 @@ function DFS(network, front, visited = []) =
                     _appendAll(current[2], cdr),
                     concat(visited, [current[0]]))
                 : DFS(network, cdr, visited));
-
-scores = [for (zero = zeroes) DFS(network, [zero, []])];
-echo(fold((function (x, y) x + y), scores, 0));
 
 // Part 2
 
@@ -129,7 +126,28 @@ function _iterateUpwards(network, inputLayer, i = 0, outputLayer = []) =
 function countPaths(network) =
     let (outputLayer = _iterateUpwards(
             network,
-            [for (zero = zeroes) [_findNode(network, zero), 1]]))
+            [for (trailhead = trailheads) [_findNode(network, trailhead), 1]]))
         fold((function (pair, acc) pair[1] + acc), outputLayer, 0);
 
-echo(countPaths(network));
+// Visualiser
+
+module createModel(network, maxHeight = 2){
+    for (node = network) {
+        let (
+            row = node[0][0],
+            col = node[0][1],
+            height = node[1],
+            neighbours = node[2])
+        translate([row, col, 0])
+            color([0.0 + (height / 10), 0.2, 1.0 - (height / 10)])
+                cube([1, 1, maxHeight * (height + 1)/(PATH_END + 1)]);
+    }
+}
+
+if (!doModel) {
+    scores = [for (trailhead = trailheads) DFS(network, [trailhead, []])];
+    echo(fold((function (x, y) x + y), scores, 0));
+    echo(countPaths(network));
+} else {
+    createModel(network);
+}
