@@ -81,3 +81,55 @@ function DFS(network, front, visited = []) =
 scores = [for (zero = zeroes) DFS(network, [zero, []])];
 echo(fold((function (x, y) x + y), scores, 0));
 
+// Part 2
+
+function _findNode(network, coord, i = 0) =
+    // Assumes coord is in the network!
+    network[i][0] == coord
+        ? network[i]
+        : _findNode(network, coord, i + 1);
+
+function _layerContains(layer, coord, i = 0) =
+    i >= len(layer)
+        ? false
+        : (layer[i][0][0] == coord
+            ? true
+            : _layerContains(layer, coord, i + 1));
+
+function _extendLayer(network, layer, coords, i = 0) =
+    i >= len(coords)
+        ? layer
+        : _extendLayer(
+            network,
+            (_layerContains(layer, coords[i])
+                ? layer
+                : concat(layer, [[_findNode(network, coords[i]), 0]])),
+            coords,
+            i + 1);
+
+function _incrementNodeAmounts(network, layer, coords, amount) =
+    [for (pair = _extendLayer(network, layer, coords))
+        search([pair[0][0]], coords)[0] == []
+            ? pair
+            : [pair[0], pair[1] + amount]];
+
+function _iterateUpwards(network, inputLayer, i = 0, outputLayer = []) =
+    // inputLayer is [[[coord, value, neighbours], amount], ...]
+    i >= len(inputLayer)
+        ? (outputLayer[0][0][1] == PATH_END
+            ? outputLayer
+            : _iterateUpwards(network, outputLayer))
+        : (let (node = inputLayer[i][0], amount = inputLayer[i][1])
+            _iterateUpwards(
+                network,
+                inputLayer,
+                i + 1,
+                _incrementNodeAmounts(network, outputLayer, node[2], amount)));
+
+function countPaths(network) =
+    let (outputLayer = _iterateUpwards(
+            network,
+            [for (zero = zeroes) [_findNode(network, zero), 1]]))
+        fold((function (pair, acc) pair[1] + acc), outputLayer, 0);
+
+echo(countPaths(network));
