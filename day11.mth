@@ -1,7 +1,11 @@
 module aoc2024.day11
 
 import std.prelude
+import std.byte
+import std.file
 import std.list
+import std.result
+import std.str
 import std.world
 
 def smallest-power-of-ten [ Int -- Int ] {
@@ -41,24 +45,33 @@ def one-step [ Int -- List(Int) ] {
             2024 * List.L1))
 }
 
-#FIXME
-#def iter-f1(f) [ ( a -- a ) Int a -- a ] {
-    #swap 0> if(
-        #1- swap (f a) iter-f1(f),
-        #drop)
-#}
+def parse-nat [ Str -- Nat ] {
+    0 swap
+    Str.bytes-for(dup Byte.is-digit if(dip(10 *) >Int 48 - +, drop))
+    >Nat-unsafe
+}
+
+def parse-into-list [ Str -- List(Int) ] {
+    Str.split-byte(Byte.BSPACE =) >List
+    # Mirth does not yet have functions for parsing Str to Int,
+    # or converting F64 to Int.
+    List.map(parse-nat >Int)
+}
 
 def main {
-    # First example
-    0 1 10 99 999 List.L5
-    List.flatmap(one-step) \example-output
-    Str(@example-output repr;) print
-    # Second example
-    125 17 List.L2 \example-2
-    6 while(dup 0>, 1-
-        @example-2 List.flatmap(one-step) \example-2
-        Str(@example-2 repr;) print)
-    @example-2:len >Str print
-    # Testing iterating a function
-    #3 5 iter-f1(1-) # should return 2
+    # First example (Should produce [ 1 2024 1 0 9 9 2021976 ])
+    #0 1 10 99 999 List.L5
+    #List.flatmap(one-step) \example-output
+    #Str(@example-output repr;) print
+    # Second example (Should produce 55312)
+    #125 17 List.L2
+    #25 while(dup 0>, 1-
+    #    dip(List.flatmap(one-step)))
+    #drop List.len >Str print
+    "input11.txt" >Path std.prim.+World.read-path! then(
+        parse-into-list
+        25 while(dup 0>, 1-
+            dip(List.flatmap(one-step)))
+        drop List.len >Str print
+    )
 }
