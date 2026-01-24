@@ -33,3 +33,10 @@ day09: day09.m
         -I/usr/lib/gcc/x86_64-linux-gnu/11/include/ \
         day09.m -o day09
 
+day11: day11.mth
+	mkdir -p src
+	ln -s "$$(pwd)/day11.mth" src/day11.mth || true
+	ln -s "$$HOME/.local/lib/mirth" lib || true
+	mirth src/day11.mth -o day11.c
+	gcc -O2 day11.c -o day11
+

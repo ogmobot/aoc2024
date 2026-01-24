@@ -1,0 +1,64 @@
+module aoc2024.day11
+
+import std.prelude
+import std.list
+import std.world
+
+def smallest-power-of-ten [ Int -- Int ] {
+    # Find the smallest power of ten LARGER than n
+    1
+    while(over over >=, 10 *)
+    nip
+}
+
+def count-digits [ Int -- Int ] {
+    smallest-power-of-ten
+    -1 swap
+    while (dup 0>, swap 1+ swap 10 divmod drop)
+    drop
+    # (Note -- by this logic, 0 has 0 digits...)
+}
+
+def split-in-half [ Int -- Int Int ] {
+    dup count-digits 2 divmod drop
+    1 while(over 0>, 10 * swap 1- swap)
+    nip
+    divmod
+}
+
+def digits-even? [ Int -- Bool ] {
+    # Return whether an integer has an even amount of digits
+    count-digits
+    2 divmod nip 0=
+}
+
+def one-step [ Int -- List(Int) ] {
+    # Output list could be of length 1 or length 2.
+    dup 0= if(
+        1+ List.L1,
+        dup digits-even? if(
+            split-in-half List.L2,
+            2024 * List.L1))
+}
+
+#FIXME
+#def iter-f1(f) [ ( a -- a ) Int a -- a ] {
+    #swap 0> if(
+        #1- swap (f a) iter-f1(f),
+        #drop)
+#}
+
+def main {
+    # First example
+    0 1 10 99 999 List.L5
+    List.flatmap(one-step) \example-output
+    Str(@example-output repr;) print
+    # Second example
+    125 17 List.L2 \example-2
+    6 while(dup 0>, 1-
+        @example-2 List.flatmap(one-step) \example-2
+        Str(@example-2 repr;) print)
+    @example-2:len >Str print
+    # Testing iterating a function
+    #3 5 iter-f1(1-) # should return 2
+}
