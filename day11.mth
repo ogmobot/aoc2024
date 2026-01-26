@@ -11,19 +11,20 @@ import std.result
 import std.str
 import std.world
 
-############################
-# World's worst hash table #
-############################
+##############################
+# Basic hash table structure #
+##############################
 
-# std.map implements a map as a LISP-style a-list
-# TODO: put ~0x10000 of these into an array and lookup with hash
 struct HashTable(k, v) {
     value-lists: Array(Map(k, v))
     --
     def New [ HashTable(k, v) ] {
-        Map.Nil 65336u Array.New >value-lists
+        Map.Nil 1024u Array.New >value-lists
         HashTable
     }
+    ||| Insertion and retrieval both require the caller to provide 
+    ||| a matching hash function. Providing a different hash function
+    ||| may prevent retrieval.
     def insert(hashfn) [
         ( k -- U16 ) KeyValuePair(k, v) HashTable(k, v)
         --
@@ -53,7 +54,7 @@ struct HashTable(k, v) {
 
 def hashInt2 [ [Int Int] -- U16 ] {
     unpack2 +
-    65336 divmod nip
+    1024 divmod nip
     >U16-wrap
 }
 
@@ -147,28 +148,15 @@ def parse-into-list [ Str -- List(Int) ] {
 #################
 
 def main {
-    ||| # First example (Should produce [ 1 2024 1 0 9 9 2021976 ])
-    ||| 0 1 10 99 999 List.L5
-    ||| List.flatmap(one-step) \example-output
-    ||| Str(@example-output repr;) print
-    ||| # Second example (Should produce 55312)
-    ||| 125 17 List.L2
-    ||| 25 while(dup 0>, 1-
-    |||     dip(List.flatmap(one-step)))
-    ||| drop List.len >Str print
     "input11.txt" >Path std.prim.+World.read-path! then(
         parse-into-list
         dup
 
-        # Part 1 -- funnily enough, the linear lookup of std.map
-        # means that the naive approach is faster for n=25
-        25 while(dup 0>, 1-
-            dip(List.flatmap(one-step)))
-        drop List.len >Str print
-
-        # Part 2 -- please be patient (takes ~10 min)
-        HashTable.New swap
-            map(25 pack2 n-steps) sum(+) unwrap(-1) >Str print
+        HashTable.New
+        # Part 1
+        swap map(25 pack2 n-steps) sum(+) unwrap(-1) >Str print
+        # Part 2 (takes ~15s)
+        swap map(75 pack2 n-steps) sum(+) unwrap(-1) >Str print
         drop
     )
 }

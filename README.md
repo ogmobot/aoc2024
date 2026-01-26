@@ -133,3 +133,17 @@ I used the same "bottom-up" approach to this problem in both my Python and OpenS
 **OpenSCAD**: better for modelling than problem-solving.
 
 **Syntax Highlight**: `for (x = xs)` (instantiates the loop variable, like the `:` or `in` of other languages)
+
+Day 11: [Mirth](https://git.sr.ht/~typeswitch/mirth)
+----------------------------------------------------
+Mirth is an interesting language. I don't think I have a great handle on it yet (only just enough to create a basic hash map). In particular, operations like `\`, `@`, `+method` and `var>` still feel a bit mysterious to me, and I'm not sure how to spell the type of a variable that stores a function. (Hopefully the tutorial, when it's written, will make these things clearer.) It feels very different from Forth (e.g. using `()` to delimit blocks of code, instead of comments; a typing system with derived types like Maybe(T) and Result(T); a system to check if function signatures match their actions; LISP-style lists), but there are a lot of similarities, too. I look forward to the point when its standard libraries include a faster Map structure than LISP-style alists. (Also ways to parse a string into an integer.)
+
+Many of Mirth's Words are context-sensitive. For example, `insert` will have a different effect depending on whether the top of the stack is a List or a Map; and `if(f,g)` decides which of its arguments to call differently depending on whether the top of the stack is a boolean or a Maybe(T). This makes it feel almost like the stack is filled with Smalltalk-style objects, so that each Word is a method. (Structures can also be patched to respond to more methods.)
+
+My original Mirth solution to this problem used the standard library's Map, and took 80 minutes to run. My (hacked-together, fragile) hash table speeds this up to about 15 seconds. The table is backed by an array of lists, and after some experimentation I found that a length of 1024 is the power of 2 that has the best performance. (I'm not exactly sure why this is, as a larger table would, in theory, get faster lookups. I suspect the `dup` in the lookup function is copying the table by value, not by reference, so that larger tables require more copying data around, despite more efficienc lookups. Maybe one day I'll figure out those `+`s and `>`s and fix it...)
+
+When writing my Python solution, I got stuck on Part 2 because I was accidently iterating over the result of Part 1, rather than the program input. I made sure to avoid this mistake in the Mirth version.
+
+**Mirth**: the good parts of Forth and the good parts of Smalltalk fused together.
+
+**Syntax Highlight**: `then` (carries out a block of code only if the value on top of the stack is truthy)
