@@ -6,6 +6,7 @@ import std.byte
 import std.file
 import std.list
 import std.map
+import std.maybe
 import std.result
 import std.str
 import std.world
@@ -14,9 +15,47 @@ import std.world
 # World's worst hash table #
 ############################
 
-# std.map implements a map as a LISP-style p-list
+# std.map implements a map as a LISP-style a-list
 # TODO: put ~0x10000 of these into an array and lookup with hash
+struct HashTable(k, v) {
+    value-lists: Array(Map(k, v))
+    --
+    def New [ HashTable(k, v) ] {
+        Map.Nil 65336u Array.New >value-lists
+        HashTable
+    }
+    def insert(hashfn) [
+        ( k -- U16 ) KeyValuePair(k, v) HashTable(k, v)
+        --
+        HashTable(k, v)
+    ] {
+        over pair drop hashfn \hash
+        # ( kv ht )
+        # this dup is gonna hurt performance if it dups the whole array...
+        dup dip(
+            @hash swap get-internal-alist insert
+        )
+        # ( alist ht )
+        @hash >Nat swap value-lists:set
+    }
+    def get(hashfn, keq) [
+        ( k -- U16, k k -- Bool )
+        k HashTable(k, v) -- Maybe(v)
+    ] {
+        over hashfn
+        swap get-internal-alist
+        lookup(keq)
+    }
+    def get-internal-alist [ U16 HashTable(k, v) -- Map(k, v) ] {
+        value-lists dip(>Nat) get
+    }
+}
 
+def hashInt2 [ [Int Int] -- U16 ] {
+    unpack2 +
+    65336 divmod nip
+    >U16-wrap
+}
 
 #########################
 # Stone-splitting logic #
@@ -59,7 +98,9 @@ def one-step [ Int -- List(Int) ] {
             2024 * List.L1))
 }
 
-def sum-solns [ Map([Int Int], Int) [Int Int] -- Map([Int Int], Int) Int ] {
+def sum-solns [
+    HashTable([Int Int], Int) [Int Int] -- HashTable([Int Int], Int) Int
+] {
     # Given [ stone repeats ],
     # Finds the sum of [ stone' repeats-1 ] for each stone' in one-step
     unpack2 swap one-step
@@ -69,17 +110,19 @@ def sum-solns [ Map([Int Int], Int) [Int Int] -- Map([Int Int], Int) Int ] {
     sum(+) unwrap(-1)
 }
 
-def n-steps [ Map([Int Int], Int) [Int Int] -- Map([Int Int], Int) Int ] {
+def n-steps [
+    HashTable([Int Int], Int) [Int Int] -- HashTable([Int Int], Int) Int
+] {
     # ( cache [stone repeats] -- cache' result )
     dup unpack2 nip 0= if(
         drop 1,
-        dup2 swap lookup(pack2=(=, =)) dup if(
+        dup2 swap get(hashInt2, pack2=(=, =)) dup if(
             # ( cache [stone repeats] Some(soln) )
             unwrap(0) nip,
             # ( cache [stone repeats] None )
             drop swap over sum-solns
             # ( [stone repeats] cache soln )
-            dup dip(dip(swap) KeyValuePair.Pair swap insert)))
+            dup dip(dip(swap) KeyValuePair.Pair swap insert(hashInt2))))
 }
 
 #####################
@@ -116,14 +159,16 @@ def main {
     "input11.txt" >Path std.prim.+World.read-path! then(
         parse-into-list
         dup
+
         # Part 1 -- funnily enough, the linear lookup of std.map
         # means that the naive approach is faster for n=25
         25 while(dup 0>, 1-
             dip(List.flatmap(one-step)))
         drop List.len >Str print
-        # Part 2 -- please be patient
-        Map.Nil swap
-            map(75 pack2 n-steps) sum(+) unwrap(-1) >Str print
+
+        # Part 2 -- please be patient (takes ~10 min)
+        HashTable.New swap
+            map(25 pack2 n-steps) sum(+) unwrap(-1) >Str print
         drop
     )
 }
