@@ -1,12 +1,26 @@
 module aoc2024.day11
 
 import std.prelude
+import std.array
 import std.byte
 import std.file
 import std.list
+import std.map
 import std.result
 import std.str
 import std.world
+
+############################
+# World's worst hash table #
+############################
+
+# std.map implements a map as a LISP-style p-list
+# TODO: put ~0x10000 of these into an array and lookup with hash
+
+
+#########################
+# Stone-splitting logic #
+#########################
 
 def smallest-power-of-ten [ Int -- Int ] {
     # Find the smallest power of ten LARGER than n
@@ -45,33 +59,71 @@ def one-step [ Int -- List(Int) ] {
             2024 * List.L1))
 }
 
+def sum-solns [ Map([Int Int], Int) [Int Int] -- Map([Int Int], Int) Int ] {
+    # Given [ stone repeats ],
+    # Finds the sum of [ stone' repeats-1 ] for each stone' in one-step
+    unpack2 swap one-step
+    map(over 1- pack2)
+    nip
+    map(n-steps)
+    sum(+) unwrap(-1)
+}
+
+def n-steps [ Map([Int Int], Int) [Int Int] -- Map([Int Int], Int) Int ] {
+    # ( cache [stone repeats] -- cache' result )
+    dup unpack2 nip 0= if(
+        drop 1,
+        dup2 swap lookup(pack2=(=, =)) dup if(
+            # ( cache [stone repeats] Some(soln) )
+            unwrap(0) nip,
+            # ( cache [stone repeats] None )
+            drop swap over sum-solns
+            # ( [stone repeats] cache soln )
+            dup dip(dip(swap) KeyValuePair.Pair swap insert)))
+}
+
+#####################
+# Parsing functions #
+#####################
+
 def parse-nat [ Str -- Nat ] {
     0 swap
-    Str.bytes-for(dup Byte.is-digit if(dip(10 *) >Int 48 - +, drop))
+    bytes-for(dup is-digit if(dip(10 *) >Int 48 - +, drop))
     >Nat-unsafe
 }
 
 def parse-into-list [ Str -- List(Int) ] {
-    Str.split-byte(Byte.BSPACE =) >List
+    split-byte(Byte.BSPACE =) >List
     # Mirth does not yet have functions for parsing Str to Int,
     # or converting F64 to Int.
-    List.map(parse-nat >Int)
+    map(parse-nat >Int)
 }
 
+#################
+# Main function #
+#################
+
 def main {
-    # First example (Should produce [ 1 2024 1 0 9 9 2021976 ])
-    #0 1 10 99 999 List.L5
-    #List.flatmap(one-step) \example-output
-    #Str(@example-output repr;) print
-    # Second example (Should produce 55312)
-    #125 17 List.L2
-    #25 while(dup 0>, 1-
-    #    dip(List.flatmap(one-step)))
-    #drop List.len >Str print
+    ||| # First example (Should produce [ 1 2024 1 0 9 9 2021976 ])
+    ||| 0 1 10 99 999 List.L5
+    ||| List.flatmap(one-step) \example-output
+    ||| Str(@example-output repr;) print
+    ||| # Second example (Should produce 55312)
+    ||| 125 17 List.L2
+    ||| 25 while(dup 0>, 1-
+    |||     dip(List.flatmap(one-step)))
+    ||| drop List.len >Str print
     "input11.txt" >Path std.prim.+World.read-path! then(
         parse-into-list
+        dup
+        # Part 1 -- funnily enough, the linear lookup of std.map
+        # means that the naive approach is faster for n=25
         25 while(dup 0>, 1-
             dip(List.flatmap(one-step)))
         drop List.len >Str print
+        # Part 2 -- please be patient
+        Map.Nil swap
+            map(75 pack2 n-steps) sum(+) unwrap(-1) >Str print
+        drop
     )
 }
