@@ -22,7 +22,7 @@ struct HashTable(k, v) {
         Map.Nil 1024u Array.New >value-lists
         HashTable
     }
-    ||| Insertion and retrieval both require the caller to provide 
+    ||| Insertion and retrieval both require the caller to provide
     ||| a matching hash function. Providing a different hash function
     ||| may prevent retrieval.
     def insert(hashfn) [

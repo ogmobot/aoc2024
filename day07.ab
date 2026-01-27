@@ -1,8 +1,6 @@
 #!/usr/bin/env amber
 
-import {
-    lpad, parse_int, split, split_words, trim
-} from "std/text"
+import { lpad, parse_int, split, split_words, trim } from "std/text"
 import { array_pop } from "std/array"
 
 fun minpow(lim: Int, b: Int): Int {

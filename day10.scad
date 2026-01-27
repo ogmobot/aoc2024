@@ -144,7 +144,7 @@ module createModel(network, maxHeight = 2){
     }
 }
 
-if (!doModel) {
+if (is_undef(doModel)) {
     scores = [for (trailhead = trailheads) DFS(network, [trailhead, []])];
     echo(fold((function (x, y) x + y), scores, 0));
     echo(countPaths(network));
