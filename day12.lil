@@ -1,0 +1,102 @@
+# Represent each region as a list of row@col
+
+# Utility functions
+
+func or args {
+    foreach [slice $args 1] {
+        upeval "downeval \"set v \"\[${i}\]"
+        if $v { return 1 }
+    }
+    return 0
+}
+
+# This isn't needed, since lookup out-of-bounds returns empty string
+# func oob {grid coord} {
+#     lmap [split $coord @] row col
+#     # use count for lists and length for strings
+#     return [or {expr $row < 0} {expr $row >= [count $grid]} \
+#                {expr $col < 0} {expr $col >= [length [index $grid $row]]}]
+# }
+
+func gridget {grid coord} {
+    lmap [split $coord @] row col
+    return [charat [index $grid $row] $col]
+}
+
+# Functions to keep track of visited cells
+# (TODO implement these in C and build a wrapper)
+# Usage:
+#   mapset my-grid 2@3 foo
+#   mapget my-grid 2@3     # => foo
+
+func mapset {gridname key value} {
+    set varname "M"$gridname"@"$key
+    upeval "set $varname $value"
+}
+func mapget {gridname key} {
+    set "M"$gridname"@"$key
+}
+
+# Main program logic
+
+func getadj {coord} {
+    lmap [split $coord "@"] row col
+    return [list [expr $row + 1]"@"$col [expr $row - 1]"@"$col \
+                 $row"@"[expr $col + 1] $row"@"[expr $col - 1]]
+}
+
+func floodfill {grid row col} {
+    set region [list]
+    set front [list $row"@"$col]
+    while {[expr [count $front] > 0]} {
+        # pop
+        set current [index $front 0]
+        set front [slice $front 1]
+        if not [mapget visited $current] {
+            topeval "mapset visited $current 1"
+            append region $current
+            foreach adj [getadj $current] {
+                if [streq [gridget $grid $current] [gridget $grid $adj]] {
+                    append front $adj
+                }
+            }
+        }
+    }
+    return $region
+}
+
+func perimeter {grid region} {
+    # for each coord in the region, count adjacent cells that don't match
+    set total 0
+    foreach coord $region {
+        foreach adj [getadj $coord] {
+            if not [streq [gridget $grid $coord] [gridget $grid $adj]] {
+                inc total
+            }
+        }
+    }
+    return $total
+}
+
+func price {grid region} {
+    return [expr [perimeter $grid $region] * [count $region]]
+}
+
+func main {fname} {
+    set grid [split [trim [read $fname]] "\n"]
+    set regions [list]
+    for {set r 0} {[expr $r < [count $grid]]} {inc r} {
+        for {set c 0} {[expr $c < [length [index $grid $r]]} {inc c} {
+            if not [mapget visited $r"@"$c] {
+                append regions [floodfill $grid $r $c]
+            }
+        }
+    }
+    set total 0
+    foreach region $regions {
+        inc total [price $grid $region]
+    }
+    print $total
+}
+
+main input12.txt
