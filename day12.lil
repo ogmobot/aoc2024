@@ -10,6 +10,14 @@ func or args {
     return 0
 }
 
+func and args {
+    foreach [slice $args 1] {
+        upeval "downeval \"set v \"\[${i}\]"
+        if not $v { return 0 }
+    }
+    return 1
+}
+
 # This isn't needed, since lookup out-of-bounds returns empty string
 # func oob {grid coord} {
 #     lmap [split $coord @] row col
@@ -29,12 +37,12 @@ func gridget {grid coord} {
 #   mapset my-grid 2@3 foo
 #   mapget my-grid 2@3     # => foo
 
-func mapset {gridname key value} {
-    set varname "M"$gridname"@"$key
+func mapset {mapname key value} {
+    set varname "M"$mapname"@"$key
     upeval "set $varname $value"
 }
-func mapget {gridname key} {
-    set "M"$gridname"@"$key
+func mapget {mapname key} {
+    set "M"$mapname"@"$key
 }
 
 # Main program logic
@@ -82,6 +90,73 @@ func price {grid region} {
     return [expr [perimeter $grid $region] * [count $region]]
 }
 
+func countcorners {grid coord} {
+    lmap [split $coord @] row col
+    set corners 0
+    set myself [gridget $grid $coord]
+    ## convex corners
+    # top left
+    if not [or {streq $myself [gridget $grid [expr $row - 1]"@"$col]} \
+               {streq $myself [gridget $grid $row"@"[expr $col - 1]]}] {
+        inc corners
+    }
+    # top right
+    if not [or {streq $myself [gridget $grid [expr $row - 1]"@"$col]} \
+               {streq $myself [gridget $grid $row"@"[expr $col + 1]]}] {
+        inc corners
+    }
+    # bottom left
+    if not [or {streq $myself [gridget $grid [expr $row + 1]"@"$col]} \
+               {streq $myself [gridget $grid $row"@"[expr $col - 1]]}] {
+        inc corners
+    }
+    # bottom right
+    if not [or {streq $myself [gridget $grid [expr $row + 1]"@"$col]} \
+               {streq $myself [gridget $grid $row"@"[expr $col + 1]]}] {
+        inc corners
+    }
+    ## concave corners
+    # top left
+    if [and {streq $myself [gridget $grid [expr $row - 1]"@"$col]} \
+            {streq $myself [gridget $grid $row"@"[expr $col - 1]]} \
+        {strcmp $myself [gridget $grid [expr $row - 1]"@"[expr $col - 1]]}] {
+        inc corners
+    }
+    # top right
+    if [and {streq $myself [gridget $grid [expr $row - 1]"@"$col]} \
+            {streq $myself [gridget $grid $row"@"[expr $col + 1]]} \
+        {strcmp $myself [gridget $grid [expr $row - 1]"@"[expr $col + 1]]}] {
+        inc corners
+    }
+    # bottom left
+    if [and {streq $myself [gridget $grid [expr $row + 1]"@"$col]} \
+            {streq $myself [gridget $grid $row"@"[expr $col - 1]]} \
+        {strcmp $myself [gridget $grid [expr $row + 1]"@"[expr $col - 1]]}] {
+        inc corners
+    }
+    # bottom right
+    if [and {streq $myself [gridget $grid [expr $row + 1]"@"$col]} \
+            {streq $myself [gridget $grid $row"@"[expr $col + 1]]} \
+        {strcmp $myself [gridget $grid [expr $row + 1]"@"[expr $col + 1]]}] {
+        inc corners
+    }
+
+    return $corners
+}
+
+func ncorners {grid region} {
+    set total 0
+    foreach coord $region {
+        inc total [countcorners $grid $coord]
+    }
+    return $total
+}
+
+func discounted {grid region} {
+    # print [gridget $grid [index $region 0]] [count $region] [ncorners $grid $region]
+    return [expr [ncorners $grid $region] * [count $region]]
+}
+
 func main {fname} {
     set grid [split [trim [read $fname]] "\n"]
     set regions [list]
@@ -92,9 +167,16 @@ func main {fname} {
             }
         }
     }
+    # part 1
     set total 0
     foreach region $regions {
         inc total [price $grid $region]
+    }
+    print $total
+    #part 2
+    set total 0
+    foreach region $regions {
+        inc total [discounted $grid $region]
     }
     print $total
 }
