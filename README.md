@@ -147,3 +147,15 @@ When writing my Python solution, I got stuck on Part 2 because I was accidently 
 **Mirth**: the good parts of Forth and the good parts of Smalltalk fused together.
 
 **Syntax Highlight**: `then` (carries out a block of code only if the value on top of the stack is truthy)
+
+Day 12: [LIL](https://github.com/wsxiaoys/lil) (Little Interpreted Language)
+----------------------------------------------------------------------------
+This "stringly-typed" language feels very Tcl-ish. Impressively, it consists of just a single header and `.c` file, so is extremely easy to embed within C projects (or, of course, Zig, C++, or any other language that has a good foreign function interface). The drawback of dealing with all data like strings is, of course, speed; and the program I wrote is impressively slow (clocking in at over an hour to solve the problem).
+
+It doesn't seem possible within the language to modify the elements of a list (at least, not without rebuilding it entirely), so I used possibly the dumbest possible way to store which cells of this puzzle's grid have been visited: dynamically creating a separate variable for each different location in the grid. Variable symbols are literal strings, so creating a new variable is as simple as substituting a string of your choice into the `set` function. (This makes variable lookup take a long time, but I don't think that's the bottleneck for this program..?) I'd like to implement a C function that does this faster, and embed the LIL program within it, so I can avoid dynamically creating 20 thousand variables.
+
+As dumb as my LIL solution is, my Python solution may be even worse. Instead of calculating the number of edges a shape has by counting its corners, it takes every single fragment of an edge and rubs it against every single other fragment of edge until they stop sticking together. Vertical and horizontal edges are counted separately. (This would be what, $O(n^2)$ ?) Despite the slowness of LIL, I'm pretty sure it's using a better algorithm (closer to $O(n)$ ). It's just that the thousands of string comparisons and concatenations slow it down a bit!
+
+**LIL**: an even more embeddable Tcl.
+
+**Syntax Highlight**: `topeval` (evaluates an expression in the topmost scope; also `upeval`, `downeval` and `jaileval`)
