@@ -1,5 +1,6 @@
 RUNNABLES := day01.sh day02.sh day03    day04.sh day05.be \
-             day06    day07.sh day08.js day09    day10.sh
+             day06    day07.sh day08.js day09    day10.sh \
+             day11    day12
 
 dummy:
 
@@ -40,3 +41,6 @@ day11: day11.mth
 	mirth src/day11.mth -o day11.c
 	gcc -O2 day11.c -o day11
 
+LILDIR := $$HOME/git/lil
+day12: day12.c
+	gcc day12.c -O2 -L$(LILDIR) -I$(LILDIR) -llil -lm -o day12

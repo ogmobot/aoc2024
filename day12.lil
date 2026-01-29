@@ -30,18 +30,8 @@ func gridget {grid row col} {
     return [charat [index $grid $row] $col]
 }
 
-# Functions to keep track of visited cells
-# (TODO implement these in C and build a wrapper)
-# Usage:
-#   mapset my-grid 2@3 foo
-#   mapget my-grid 2@3     # => foo
-
-func mapset {mapname key value} {
-    set varname "M"$mapname"@"$key
-    upeval "set $varname $value"
-}
-func mapget {mapname key} {
-    set "M"$mapname"@"$key
+func find-linear-index {grid row col} {
+    return [expr ( $row * [count $grid] ) + $col]
 }
 
 # Main program logic
@@ -51,15 +41,16 @@ func getadj {row col} {
                  [list $row [expr $col + 1]] [list $row [expr $col - 1]]]
 }
 
-func floodfill {grid row col} {
+func floodfill {grid visited row col} {
     set region [list]
     set front [list [list $row $col]]
     while {[expr [count $front] > 0]} {
         # pop
-        lmap [index $front 0 ] r c
+        lmap [index $front 0] r c
+        set di [find-linear-index $grid $r $c]
         set front [slice $front 1]
-        if not [mapget visited $r"@"$c] {
-            topeval "mapset visited "$r"@"$c" 1"
+        if not [darray $visited $di] {
+            [darray $visited $di 1]
             append region [list $r $c]
             foreach adj [getadj $r $c] {
                 lmap $adj ar ac
@@ -95,52 +86,24 @@ func countcorners {grid row col} {
     set corners 0
     set myself [gridget $grid $row $col]
     # numpad logic
-    set c1 [gridget $grid [expr $row + 1] [expr $col - 1]] \
-        c2 [gridget $grid [expr $row + 1]       $col     ] \
-        c3 [gridget $grid [expr $row + 1] [expr $col + 1]] \
-        c4 [gridget $grid       $row      [expr $col - 1]] \
-        c5 [gridget $grid       $row            $col     ] \
-        c6 [gridget $grid       $row      [expr $col + 1]] \
-        c7 [gridget $grid [expr $row - 1] [expr $col - 1]] \
-        c8 [gridget $grid [expr $row - 1]       $col     ] \
-        c9 [gridget $grid [expr $row - 1] [expr $col + 1]]
-    ## convex corners
-    # top left
-    if not [or {streq $myself $c8} {streq $myself $c4}] {
-        inc corners
-    }
-    # top right
-    if not [or {streq $myself $c8} {streq $myself $c6}] {
-        inc corners
-    }
-    # bottom left
-    if not [or {streq $myself $c2} {streq $myself $c4}] {
-        inc corners
-    }
-    # bottom right
-    if not [or {streq $myself $c2} {streq $myself $c6}] {
-        inc corners
-    }
-    ## concave corners
-    # top left
-    if [and {streq $myself $c8} {streq $myself $c4} {strcmp $myself $c7}] {
-        inc corners
-    }
-    # top right
-    if [and {streq $myself $c8} {streq $myself $c6} {strcmp $myself $c9}] {
-        inc corners
-    }
-    # bottom left
-    if [and {streq $myself $c2} {streq $myself $c4} {strcmp $myself $c1}] {
-        inc corners
-    }
-    # bottom right
-    if [and {streq $myself $c2} {streq $myself $c6} {strcmp $myself $c3}] {
-        inc corners
-    }
+    set c1 [streq $myself [gridget $grid [expr $row + 1] [expr $col - 1]]] \
+        c2 [streq $myself [gridget $grid [expr $row + 1]       $col     ]] \
+        c3 [streq $myself [gridget $grid [expr $row + 1] [expr $col + 1]]] \
+        c4 [streq $myself [gridget $grid       $row      [expr $col - 1]]] \
+        c6 [streq $myself [gridget $grid       $row      [expr $col + 1]]] \
+        c7 [streq $myself [gridget $grid [expr $row - 1] [expr $col - 1]]] \
+        c8 [streq $myself [gridget $grid [expr $row - 1]       $col     ]] \
+        c9 [streq $myself [gridget $grid [expr $row - 1] [expr $col + 1]]]
 
+    ## convex corners
+    inc corners [expr !( $c8 || $c4 ) + !($c8 || $c6 ) \
+                    + !( $c2 || $c4 ) + !($c2 || $c6 )]
+    ## concave corners
+    inc corners [expr (!!$c8 && !!$c4 && !$c7 ) + (!!$c8 && !!$c6 && !$c9 ) \
+                    + (!!$c2 && !!$c4 && !$c1 ) + (!!$c2 && !!$c6 && !$c3 )]
     return $corners
 }
+
 
 func ncorners {grid region} {
     set total 0
@@ -155,16 +118,23 @@ func discounted {grid region} {
     return [expr [ncorners $grid $region] * [count $region]]
 }
 
-func main {fname} {
-    set grid [split [trim [read $fname]] "\n"]
+func find-regions {grid} {
+    set visited [make-darray]
     set regions [list]
-    for {set r 0} {[expr $r < [count $grid]]} {inc r} {
+    for {set r 0} {[expr $r < [count $grid]} {inc r} {
         for {set c 0} {[expr $c < [length [index $grid $r]]} {inc c} {
-            if not [mapget visited $r"@"$c] {
-                append regions [floodfill $grid $r $c]
+            if not [darray $visited [find-linear-index $grid $r $c]] {
+                append regions [floodfill $grid $visited $r $c]
             }
         }
     }
+    free-darray $visited
+    return $regions
+}
+
+func main {fname} {
+    set grid [split [trim [read $fname]] "\n"]
+    set regions [find-regions $grid] # This alone takes ~12 min
     # part 1 (takes ~30 min)
     set total 0
     foreach region $regions {
@@ -177,6 +147,7 @@ func main {fname} {
         inc total [discounted $grid $region]
     }
     print $total
+    return
 }
 
-main input12.txt
+main input12.test
