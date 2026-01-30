@@ -4,9 +4,10 @@
 #include <assert.h>
 #include "lil.h"
 
-struct darray_t {
-    lilint_t *data;
-    size_t capacity;
+struct grid_t {
+    char *data;
+    size_t width;
+    size_t height;
 };
 
 static LILCALLBACK
@@ -16,55 +17,66 @@ lil_value_t fnc_writechar(lil_t lil, size_t argc, lil_value_t *argv) {
     return NULL;
 }
 
-lil_value_t fnc_makedarray(lil_t lil, size_t argc, lil_value_t *argv) {
-    /* returns pointer to darray struct, as integer */
+lil_value_t fnc_gridmake(lil_t lil, size_t argc, lil_value_t *argv) {
+    /* returns pointer to grid struct, as integer   *
+     * usage: set grid [grid-make [read input.txt]] */
+    if (!argc) return NULL;
     assert(sizeof(lilint_t) >= sizeof(void *));
-    struct darray_t *array = calloc(1, sizeof(struct darray_t));
-    array->capacity = 0x100;
-    array->data = calloc(array->capacity, sizeof(lilint_t));
-    return lil_alloc_integer((lilint_t) array);
-}
-lil_value_t fnc_freedarray(lil_t lil, size_t argc, lil_value_t *argv) {
-    struct darray_t *array = (struct darray_t *) lil_to_integer(argv[0]);
-    free(array->data);
-    free(array);
-    return NULL;
-}
+    struct grid_t *grid = calloc(1, sizeof(struct grid_t));
+    const char *s = lil_to_string(argv[0]);
+    size_t len = strlen(s);
 
-lil_value_t fnc_darray_getset(lil_t lil, size_t argc, lil_value_t *argv) {
-    if (argc == 2 || argc == 3) {
-        struct darray_t *array = (struct darray_t *) lil_to_integer(argv[0]);
-        size_t index = (size_t) lil_to_integer(argv[1]);
-        /* If "get", ensure there's enough space */
-        while (argc == 3 && index >= array->capacity) {
-            size_t cap = array->capacity;
-            void *tmpptr = realloc(array->data, 2*cap*sizeof(lilint_t));
-            if (!tmpptr) {
-                fprintf(stderr, "out of memory!");
-                return NULL;
-            }
-            array->data = (lilint_t *) tmpptr;
-            /* realloc doesn't zero memory automatically */
-            memset(
-                (void *) ((array->data) + cap),
-                0,
-                cap * sizeof(lilint_t) / sizeof(char)
-            );
-            array->capacity = 2*cap;
-        }
-
-        if (argc == 2) { /* get */
-            if (index >= array->capacity) {
-                return lil_alloc_integer((lilint_t) 0);
-            } else {
-                return lil_alloc_integer((array->data)[index]);
-            }
-        }
-        if (argc == 3) { /* set */
-            (array->data)[index] = lil_to_integer(argv[2]);
-        }
+    grid->data = calloc(len + 1, sizeof(char));
+    if (argc >= 2) {
+        memset(grid->data, (char) lil_to_integer(argv[1]), len + 1);
+    } else {
+        strncpy(grid->data, s, len + 1);
     }
+    grid->width = strchr(s, '\n') - s;
+    grid->height = (len + 1) / (grid->width + 1);
+
+    return lil_alloc_integer((lilint_t) grid);
+}
+
+lil_value_t fnc_gridfree(lil_t lil, size_t argc, lil_value_t *argv) {
+    if (!argc) return NULL;
+    struct grid_t *tmp = (struct grid_t *) lil_to_integer(argv[0]);
+    free(tmp->data);
+    free(tmp);
     return NULL;
+}
+
+lil_value_t fnc_gridset(lil_t lil, size_t argc, lil_value_t *argv) {
+    /* usage: set-grid $grid $row $col [$val] */
+    if (argc != 3 && argc != 4) return NULL;
+    struct grid_t *grid = (struct grid_t *) lil_to_integer(argv[0]);
+    size_t row = (size_t) lil_to_integer(argv[1]);
+    size_t col = (size_t) lil_to_integer(argv[2]);
+    /* check if out of bounds */
+    if (row >= grid->height || col >= grid->width) return NULL;
+    size_t index = ((grid->width + 1) * row) + col;
+    char res = (grid->data)[index];
+    if (res == '\n') return NULL;
+
+    if (argc == 3) { /* get */
+        char buf[2] = {res, '\0'};
+        return lil_alloc_string(buf);
+    }
+    if (argc == 4) { /* set */
+        (grid->data)[index] = (char) lil_to_integer(argv[3]);
+        return NULL;
+    }
+}
+
+lil_value_t fnc_gridwidth(lil_t lil, size_t argc, lil_value_t *argv) {
+    if (!argc) return NULL;
+    struct grid_t *grid = (struct grid_t *) lil_to_integer(argv[0]);
+    return lil_alloc_integer(grid->width);
+}
+lil_value_t fnc_gridheight(lil_t lil, size_t argc, lil_value_t *argv) {
+    if (!argc) return NULL;
+    struct grid_t *grid = (struct grid_t *) lil_to_integer(argv[0]);
+    return lil_alloc_integer(grid->height);
 }
 
 int main(void) {
@@ -77,10 +89,12 @@ int main(void) {
         filename);
 
     lil_t vm = lil_new();
-    lil_register(vm, "writechar", fnc_writechar);
-    lil_register(vm, "make-darray", fnc_makedarray);
-    lil_register(vm, "free-darray", fnc_freedarray);
-    lil_register(vm, "darray", fnc_darray_getset);
+    lil_register(vm, "writechar",   fnc_writechar);
+    lil_register(vm, "grid-make",   fnc_gridmake);
+    lil_register(vm, "grid-free",   fnc_gridfree);
+    lil_register(vm, "grid-set",    fnc_gridset);
+    lil_register(vm, "grid-width",  fnc_gridwidth);
+    lil_register(vm, "grid-height", fnc_gridheight);
 
     lil_value_t result = lil_parse(vm, tmpcode, 0, 1);
 
