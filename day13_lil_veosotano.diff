@@ -1,0 +1,106 @@
+diff --git a/compiler/main.cpp b/compiler/main.cpp
+index 92a030a..cc468df 100644
+--- a/compiler/main.cpp
++++ b/compiler/main.cpp
+@@ -70,6 +70,10 @@ int main(int argc, const char * argv[]) {
+ 			arguments.push_back(command);
+ 			++i;
+ 			
++		} else if (command.substr(0, 13) == "--compilerDir") {
++            compilerDir = command.substr(14, std::string::npos);
++			++i;
++			
+ 		} else if (command == "--version") {
+ 			std::cerr << versionString << "\n";
+ 			exit(0);
+diff --git a/cpp/llvm/LILIREmitter.cpp b/cpp/llvm/LILIREmitter.cpp
+index a3d828c..dceca40 100644
+--- a/cpp/llvm/LILIREmitter.cpp
++++ b/cpp/llvm/LILIREmitter.cpp
+@@ -45,12 +45,12 @@
+ #include "llvm/IR/Verifier.h"
+ #include "llvm/Support/MemoryBuffer.h"
+ #include "llvm/Support/SourceMgr.h"
+-#include "llvm/Transforms/InstCombine/InstCombine.h"
+ #include "llvm/Transforms/Scalar.h"
+ #include "llvm/Transforms/Scalar/GVN.h"
+ #include "llvm/Transforms/Utils/ModuleUtils.h"
+ #include "llvm/AsmParser/Parser.h"
+ #include "llvm/AsmParser/LLParser.h"
++#include "llvm/Transforms/InstCombine/InstCombine.h"
+ 
+ #include "../shared/LILDOMBuilder.h"
+ 
+diff --git a/cpp/passes/LILPreprocessor.cpp b/cpp/passes/LILPreprocessor.cpp
+index 40eaa0e..1ab2499 100644
+--- a/cpp/passes/LILPreprocessor.cpp
++++ b/cpp/passes/LILPreprocessor.cpp
+@@ -32,6 +32,7 @@
+ #include "LILSelector.h"
+ #include "LILStringLiteral.h"
+ #include "LILVarName.h"
++#include <cstring>
+ 
+ using namespace LIL;
+ 
+diff --git a/cpp/shared/LILPlatformSupport.cpp b/cpp/shared/LILPlatformSupport.cpp
+index 55b5a67..46ac0b3 100644
+--- a/cpp/shared/LILPlatformSupport.cpp
++++ b/cpp/shared/LILPlatformSupport.cpp
+@@ -132,6 +132,7 @@ std::string LIL_getExecutableDir() {
+ #include <unistd.h>
+ #include <limits.h>
+ #include <libgen.h>
++#include <cstring>
+ 
+ #if __ANDROID 
+ std::string LIL_getAutoTargetString()
+@@ -172,4 +173,10 @@ std::string LIL_mergePaths(std::string pathA, std::string pathB) {
+ 	return pathA+"/"+pathB;
+ }
+ 
++void LIL_makeDir(const std::string & path)
++{
++	std::string commandStr = "mkdir -p \""+path+"\"";
++	system(commandStr.c_str());
++}
++
+ #endif
+diff --git a/cpp/shared/LILString.cpp b/cpp/shared/LILString.cpp
+index b05e975..9acdfda 100644
+--- a/cpp/shared/LILString.cpp
++++ b/cpp/shared/LILString.cpp
+@@ -13,6 +13,7 @@
+  ********************************************************************/
+ 
+ 
++#include <cstdarg>
+ #include "LILShared.h"
+ #include "LILString.h"
+ 
+diff --git a/cpp/shared/LILVisitor.cpp b/cpp/shared/LILVisitor.cpp
+index ef16ffa..5a5a5e4 100644
+--- a/cpp/shared/LILVisitor.cpp
++++ b/cpp/shared/LILVisitor.cpp
+@@ -34,7 +34,7 @@
+ #include "LILStaticArrayType.h"
+ #include "LILStringLiteral.h"
+ #include "LILValuePath.h"
+-#include "LILVaLueList.h"
++#include "LILValueList.h"
+ #include "LILVarDecl.h"
+ 
+ using namespace LIL;
+diff --git a/std/configure_defaults.lil b/std/configure_defaults.lil
+index 8bd8cc7..74f463e 100644
+--- a/std/configure_defaults.lil
++++ b/std/configure_defaults.lil
+@@ -77,6 +77,8 @@
+ 		linux {
+ 			suffix: #arg { name: "suffix"; default: "OS_LINUX" };
+ 			constants+: "OS_LINUX";
++			runCommand: '%buildPath/"%out"';
++			linkerFlags +: "/lib/x86_64-linux-gnu/crt1.o";
+ 		}
+ 		mac {
+ 			suffix: #arg { name: "suffix"; default: "OS_MAC" };

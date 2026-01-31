@@ -44,3 +44,9 @@ day11: day11.mth
 LILDIR := $$HOME/git/lil
 day12: day12.c
 	gcc day12.c -O2 -L$(LILDIR) -I$(LILDIR) -llil -lm -o day12
+
+LILVDIR := $$HOME/git/lil_veosotano
+day13: day13.lil
+	$(LILVDIR)/lil --stdLilDir=$(LILVDIR)/std --compilerDir=$(LILVDIR) \
+        --buildPath=$(LILVBUILD) day13.lil
+	cp ./lil_build_tmp/debug/day13 .
