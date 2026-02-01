@@ -4,72 +4,76 @@ const BIGNUM: 10000000000000;
 
 // Import IO functions from cstdio
 class @FILE { };
-
 fn fopen (var.cstr pathname, var.cstr mode) => ptr(@FILE) extern;
-fn fgets (var.ptr(any) s, var.i32 size, var.ptr(@FILE) stream) => ptr(any) extern;
 fn fclose (var.ptr(@FILE) stream) => i32 extern;
-fn printf (cstr...) => i32 extern;
 fn fscanf (var.ptr(@FILE) stream, cstr...) => i32 extern;
 
-fn calloc (i64, i64) => ptr(any) extern;
+class @augMatrix {
+    var.i64 ax; // button A increases X by this much
+    var.i64 ay; // button A increases Y by this much
+    var.i64 bx; // button B increases X by this much
+    var.i64 by; // button B increases Y by this much
+    var.i64 px; // the X location of the prize
+    var.i64 py; // the Y location of the prize
+    /*
+        i.e. the augmented matrix
+        [ ax bx | px ]
+        [ ay by | py ]
+    */
+    fn solve_linear => [2 x i64] {
+        // Find the column vector [a b] that solves the matrix
+        var.[2 x i64] res: [0, 0];
+        if (@self.ay * @self.bx) != (@self.ax * @self.by) {
+            if @self.bx = 0 {
+                res: [@self.px / @self.ax, 0];
+            } else {
+                res[0]: ((@self.bx * @self.py) - (@self.by * @self.px))
+                        / ((@self.ay * @self.bx) - (@self.ax * @self.by));
+                res[1]: (@self.px - (res[0] * @self.ax)) / @self.bx;
+            }
+        }
+        // If this actually results in a win...
+        if ((@self.ax * res[0]) + (@self.bx * res[1])) = @self.px {
+            if ((@self.ay * res[0]) + (@self.by * res[1])) = @self.py {
+                return res;
+            }
+        }
+        // Otherwise...
+        res: [0, 0];
+        return res;
+    }
+};
 
-fn get_next_values(var.ptr(@FILE) fp, var.ptr([6 x i64]) refmatrix) => i32 {
-    var.ptr(i64) addr: refmatrix => ptr(i64);
+fn get_next_values(var.ptr(@FILE) fp, var.ptr(@augMatrix) refmatrix) => i32 {
     return fscanf(fp,
         #paste FILE_FORMAT_STR,
-        addr,     addr + 1,
-        addr + 2, addr + 3,
-        addr + 4, addr + 5
+        pointerTo refmatrix.ax, pointerTo refmatrix.ay,
+        pointerTo refmatrix.bx, pointerTo refmatrix.by,
+        pointerTo refmatrix.px, pointerTo refmatrix.py
     );
 }
 
-fn solve_linear(var.[6 x i64] augmatrix) => [2 x i64] {
-    var.i64 ax: augmatrix[0];
-    var.i64 ay: augmatrix[1];
-    var.i64 bx: augmatrix[2];
-    var.i64 by: augmatrix[3];
-    var.i64 px: augmatrix[4];
-    var.i64 py: augmatrix[5];
-    var.[2 x i64] res: [0, 0];
-    if ((ay * bx) != (ax * by)) {
-        if (bx = 0) {
-            res: [px / ax, 0];
-        } else {
-            res[0]: ((bx * py) - (by * px)) / ((ay * bx) - (ax * by));
-            res[1]: (px - (res[0] * ax)) / bx;
-        }
-    }
-    // If this actually results in a win...
-    if (((ax * res[0]) + (bx * res[1])) = px) {
-        if (((ay * res[0]) + (by * res[1])) = py) {
-            return res;
-        }
-    }
-    // Otherwise...
-    res: [0, 0];
-    return res;
-}
-
-fn solve(var.cstr fname) {
+fn solve(var.@string fname) {
     var.[2 x i64] solns: [0, 0];
-    var.ptr(@FILE) fp: fopen(fname, `r`);
-    var.[6 x i64] augmatrix;
+    var.ptr(@FILE) fp: fopen(fname.cstr(), `r`);
+    var.@augMatrix matrix;
     for (
-        var.i32 matched: get_next_values(fp, pointerTo(augmatrix));
+        var.i32 matched: get_next_values(fp, pointerTo(matrix));
         matched = 6;
-        matched: get_next_values(fp, pointerTo(augmatrix));
+        matched: get_next_values(fp, pointerTo(matrix));
     ) {
         // part 1
-        var.[2 x i64] ab: solve_linear(augmatrix);
+        var.[2 x i64] ab: matrix.solve_linear();
         solns[0] +: (3 * ab[0]) + ab[1];
         // part 2
-        augmatrix[4] +: BIGNUM;
-        augmatrix[5] +: BIGNUM;
-        ab: solve_linear(augmatrix);
+        matrix.px +: BIGNUM;
+        matrix.py +: BIGNUM;
+        ab: matrix.solve_linear();
         solns[1] +: (3 * ab[0]) + ab[1];
     }
     fclose(fp);
-    printf(`%lld\n%lld\n`, solns[0], solns[1]);
+    print solns[0];
+    print solns[1];
 }
 
-solve(`input13.txt`);
+solve("input13.txt");
