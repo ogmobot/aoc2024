@@ -1,12 +1,12 @@
 diff --git a/compiler/main.cpp b/compiler/main.cpp
-index 92a030a..cc468df 100644
+index 92a030a..92a8c6e 100644
 --- a/compiler/main.cpp
 +++ b/compiler/main.cpp
 @@ -70,6 +70,10 @@ int main(int argc, const char * argv[]) {
  			arguments.push_back(command);
  			++i;
  			
-+		} else if (command.substr(0, 13) == "--compilerDir") {
++		} else if (command.substr(0, 14) == "--compilerDir=") {
 +            compilerDir = command.substr(14, std::string::npos);
 +			++i;
 +			
