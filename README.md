@@ -159,3 +159,17 @@ As slow as my LIL solution is, the logic behind it is better than that of my Pyt
 **LIL**: an even more embeddable Tcl. (I actually embedded it this time!)
 
 **Syntax Highlight**: `topeval` (evaluates an expression in the topmost scope; also `upeval`, `downeval` and `jaileval`)
+
+Day 13: [LIL](https://lil-language.com) (LIL Is a Language)
+-----------------------------------------------------------
+This language is a work-in-progress (v0.1.9 at time of writing) and is consequently very rough around the edges. While LIL is eventually intended to become a cross-platform game development engine, it's only properly set up for MacOS right now. I had to patch up the language to get it to work in my development environment, the major changes being:
+    * added or reordered some `#include` directives (because C++ inherited the flaw of C that the order in which files are included matters)
+    * fixed a typo in `shared/LILVisitor.cpp` (from `VaLue` to `Value`)
+    * added some platform-specific functions and linker flags for linux
+I've included the git diff of these changes with my solution. The build process involved compiling all sources to `.o` files (with `llvm-config --cxxflags` and using `-I` to include all the `cpp/*` directories), then compiling and linking all of them to the compiler with `-lstdc++`, `llvm-config --ldflags --libs` and `-Icpp`. (I also had to `ln` the `/lib64/ld-linux-x86-64.so.2` dynamic library. The language's work-in-progress nature is manifest in its clunky build process and confusing error messages; but helpfully, the compiler's `--verbose` flag gives very descriptive feedback, including linker errors.)
+
+Clearly, in the language's current state, it isn't really ideal for _game development_ on Linux, but it's more than capable of solving an Advent of Code puzzle. Its ability to include external C libraries was very helpful; I suspect parsing the text without the use of C's `fscanf` would have been far more difficult. The language gives access to pointers with the pseudo-functions `pointerTo` and `valueOf`, which take many more letters than C's `&` and `*` (but which are less mysterious). The language is obviously very inspired by C (and, of course, very compatible with it), so the minor syntax differences tripped up my muscle memory a few times. Chief among these was `:` being used as the assignment operator, rather than `=`. (Rather than `int x = 0;`, LIL has `var.i32 x: 0;`. Once I finally got it working, the program ran fine. (Since it's LLVM-optimised, it probably runs better than fine.) But I'm glad I didn't try to build anything more complex in it.
+
+**LIL**: its heart is in the right place, but it's still a baby.
+
+**Syntax Highlight**: `x` (a symbol to indicate the length of an array, e.g. `[10 x i32]` for an array of 10 32-bit integers; I think the only other instance I've seen a single alphanumeric character behave as an operator is the composition operator `o` in ML)
