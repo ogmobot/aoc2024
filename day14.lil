@@ -1,0 +1,44 @@
+#!/usr/bin/env lilt
+
+#WIDTH : 11
+#HEIGHT:  7
+WIDTH : 101
+HEIGHT: 103
+
+on parse_robot line do
+    ("px","py","vx","vy") dict "p=%i,%i v=%i,%i" parse line
+end
+
+on step r do
+    ("px","py","vx","vy") dict (WIDTH % r.px + r.vx) ,
+                               (HEIGHT % r.py + r.vy) ,
+                               r.vx ,
+                               r.vy
+end
+
+on get_quad r do
+    ((r.px < floor WIDTH / 2) & (r.py < floor HEIGHT / 2)) ,
+    ((r.px > floor WIDTH / 2) & (r.py < floor HEIGHT / 2)) ,
+    ((r.px < floor WIDTH / 2) & (r.py > floor HEIGHT / 2)) ,
+    ((r.px > floor WIDTH / 2) & (r.py > floor HEIGHT / 2))
+end
+
+on safety_factor robots do
+    prod sum get_quad @ robots
+end
+
+on main fname do
+    text : read[fname]
+    while (last text) = "\n"
+        text : -1 drop text
+    end
+    robots : parse_robot @ "\n" split text
+    each _ in range 100
+        robots : step @ robots
+    end
+    show[safety_factor[robots]]
+end
+
+main["input14.txt"]
+#show[sys.workspace]
+#{"allocs":1017432,"frees":1009982,"gcs":3094,"live":7453,"heap":65536,"depth":6}
