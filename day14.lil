@@ -21,7 +21,26 @@ on safety_factor robots do
         where (px > floor WIDTH / 2) & (py > floor HEIGHT / 2) from robots)
 end
 
+on tree? robots do
+    midx : floor WIDTH / 2
+    midy : floor HEIGHT / 2
+    400 < count select
+            where (px > midx - 40) & (px < midx + 40)
+                & (py > midy - 40) & (py < midy + 40)
+            from robots
+end
+
+on ascii_grid robots do
+    coord_dict : 1 fill (range @ select px py from robots) dict nil
+    each y in range HEIGHT
+        show["" fuse each x in range WIDTH
+            if coord_dict[x,y] "@" else "." end
+        end]
+    end
+end
+
 on main fname do
+    # parse input
     text : read[fname]
     while (last text) = "\n"
         text : -1 drop text
@@ -30,15 +49,26 @@ on main fname do
     each line in "\n" split text
         robots : robots , parse_robot[line]
     end
-    each _ in range 100
+
+    # simulate robots
+    counter : 0
+    while !(part1 & part2)
         robots : update px : WIDTH % px + vx py : HEIGHT % py + vy from robots
+        counter : counter + 1
+        if !part1
+            if counter = 100
+                part1 : safety_factor[robots]
+            end
+        end
+        if !part2
+            if tree?[robots]
+                part2 : counter
+                #ascii_grid[robots]
+            end
+        end
     end
-    show[safety_factor[robots]]
+    print[part1]
+    print[part2]
 end
 
 main["input14.txt"]
-show[sys.workspace]
-## (non-table version)
-#{"allocs":1017432,"frees":1009982,"gcs":3094,"live":7453,"heap":65536,"depth":6}
-## (table version)
-#{"allocs":69527,"frees":66962,"gcs":29,"live":2567,"heap":16384,"depth":5}
