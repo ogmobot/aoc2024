@@ -173,3 +173,19 @@ Clearly, in the language's current state, it isn't really ideal for _game develo
 **LIL**: its heart is in the right place, but it's still a baby.
 
 **Syntax Highlight**: `x` (a symbol to indicate the length of an array, e.g. `[10 x i32]` for an array of 10 32-bit integers; I think the only other instance I've seen a single alphanumeric character behave as an operator is the composition operator `o` in ML)
+
+Day 14: [Lil](https://beyondloom.com/decker/lil.html) (the Decker scripting language)
+-------------------------------------------------------------------------------------
+(Yep, I decided to go with three different LILs in a row. I find this extremely funny.)
+
+Wow, I love this language. It's taken the good parts of APL (vector operations, right-to-left operator precedence) and the good parts of Lua (readable and clear syntax), and sprinkled in a dash of SQL. Why don't more languages have database-like tables as a fundamental data type? (Curiously enough, this language shares the unusual `:` assignment operator of the LIL from Day 13.)
+
+If you check the program's history, you'll see that my first approach was a very functional "repeatedly map the `step` function over a list of dictionaries". This worked, but it was quite slow and took several seconds to simulate 100 steps. Switching to tables sped the process up to less than a second. (I suspect the language is doing something clever to ensure the constant entries in the table don't need to be duplicated in the updated version.)
+
+The process I used to solve the problem (looking for when moving robots line up to form a Christmas tree) changed compared to my Python solution. In that program, I solved the puzzle by visual inspection, which was awesome, but also hard to automate. Hence, in the Lil version, I at first tried to search for a 3x3 square of robots within the grid. The process of searching took much longer than I was satisfied with, so I changed to the current approach of testing whether the majority of the robots are close to the middle of the grid. (This is, of course, not a technique that would work for every input -- but it works here!)
+
+I think the ability of Lilt to work with strings would make it a super-convenient language for scripting. I was not expecting the scripting language from a nostalgic HyperCard remake to go so hard! (I guess my next step is to animate this solution using Decker.)
+
+**Lil**: come for Decker, stay for its scripting language.
+
+**Syntax Highlight**: `&` (finds the minimum of its two operands, and therefore behaves like the `and` of other languages when used with booleans)

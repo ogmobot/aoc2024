@@ -24,9 +24,9 @@ end
 on tree? robots do
     midx : floor WIDTH / 2
     midy : floor HEIGHT / 2
-    400 < count select
-            where (px > midx - 40) & (px < midx + 40)
-                & (py > midy - 40) & (py < midy + 40)
+    (0.9 * count robots) < count select
+            where (px > midx - 45) & (px < midx + 45)
+                & (py > midy - 45) & (py < midy + 45)
             from robots
 end
 
