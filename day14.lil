@@ -6,25 +6,19 @@ WIDTH : 101
 HEIGHT: 103
 
 on parse_robot line do
-    ("px","py","vx","vy") dict "p=%i,%i v=%i,%i" parse line
-end
-
-on step r do
-    ("px","py","vx","vy") dict (WIDTH % r.px + r.vx) ,
-                               (HEIGHT % r.py + r.vy) ,
-                               r.vx ,
-                               r.vy
-end
-
-on get_quad r do
-    ((r.px < floor WIDTH / 2) & (r.py < floor HEIGHT / 2)) ,
-    ((r.px > floor WIDTH / 2) & (r.py < floor HEIGHT / 2)) ,
-    ((r.px < floor WIDTH / 2) & (r.py > floor HEIGHT / 2)) ,
-    ((r.px > floor WIDTH / 2) & (r.py > floor HEIGHT / 2))
+    table ("px","py","vx","vy") dict "p=%i,%i v=%i,%i" parse line
 end
 
 on safety_factor robots do
-    prod sum get_quad @ robots
+    prod
+    (count select
+        where (px < floor WIDTH / 2) & (py < floor HEIGHT / 2) from robots) ,
+    (count select
+        where (px > floor WIDTH / 2) & (py < floor HEIGHT / 2) from robots) ,
+    (count select
+        where (px < floor WIDTH / 2) & (py > floor HEIGHT / 2) from robots) ,
+    (count select
+        where (px > floor WIDTH / 2) & (py > floor HEIGHT / 2) from robots)
 end
 
 on main fname do
@@ -32,13 +26,19 @@ on main fname do
     while (last text) = "\n"
         text : -1 drop text
     end
-    robots : parse_robot @ "\n" split text
+    robots : insert px py vx vy with end
+    each line in "\n" split text
+        robots : robots , parse_robot[line]
+    end
     each _ in range 100
-        robots : step @ robots
+        robots : update px : WIDTH % px + vx py : HEIGHT % py + vy from robots
     end
     show[safety_factor[robots]]
 end
 
 main["input14.txt"]
-#show[sys.workspace]
+show[sys.workspace]
+## (non-table version)
 #{"allocs":1017432,"frees":1009982,"gcs":3094,"live":7453,"heap":65536,"depth":6}
+## (table version)
+#{"allocs":69527,"frees":66962,"gcs":29,"live":2567,"heap":16384,"depth":5}
