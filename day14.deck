@@ -1,0 +1,16 @@
+{deck}
+version:1
+card:0
+size:[404,412]
+name:"Advent of Code: Day 14"
+
+{card:home}
+{widgets}
+main_canvas:{"type":"canvas","size":[202,206],"pos":[101,103],"locked":1,"volatile":1,"show":"invert","border":1,"scale":2}
+start_button:{"type":"button","size":[60,20],"pos":[101,312],"script":"home.0","text":"Go"}
+counter_text:{"type":"field","size":[101,40],"pos":[202,312],"locked":1,"volatile":1,"border":0}
+
+{script:home.0}
+prog:danger.read["day14.lil"]
+eval[prog () 1]
+{end}
