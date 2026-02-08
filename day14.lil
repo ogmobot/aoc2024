@@ -25,22 +25,21 @@ on tree? robots do
             from robots
 end
 
-on paint_grid robots do
-    coord_dict:1 fill (range @ select px py from robots) dict nil
+on paint_grid robots img do
+    each r in rows robots
+        img[r.px,r.py]:1
+    end
     if main_canvas
-        robot_img:image[main_canvas.lsize]
-        robot_img.pixels:each y in range HEIGHT
-            each x in range WIDTH
-                if coord_dict[x,y] 1 else 0 end
-            end
-        end
-        main_canvas.paste[robot_img]
+        main_canvas.paste[img]
     else
         each y in range HEIGHT
             show["" fuse each x in range WIDTH
-                if coord_dict[x,y] "@" else "." end
+                if img[x,y] "@" else "." end
             end]
         end
+    end
+    each r in rows robots
+        img[(r.px,r.py)]:0
     end
 end
 
@@ -52,6 +51,7 @@ on main fname do
     else
         read[fname]
     end
+    visualiser:image[(WIDTH,HEIGHT)]
     while (last text)="\n"
         text:-1 drop text
     end
@@ -76,10 +76,8 @@ on main fname do
             end
         end
         if main_canvas
-            if !1000%counter
-                paint_grid[robots]
-            end
             if !100%counter
+                paint_grid[robots visualiser]
                 counter_text.text:"Time: %04i" format counter
                 sleep[1]
             end
@@ -87,11 +85,12 @@ on main fname do
     end
     if main_canvas
         counter_text.text:"Part 1: %i\nPart 2: %i" format part1,part2
-        paint_grid[robots]
+        paint_grid[robots visualiser]
     else
         print[part1]
         print[part2]
     end
+    robots
 end
 
 main["input14.txt"]
