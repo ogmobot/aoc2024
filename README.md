@@ -186,7 +186,7 @@ If you check the program's history, you'll see that my first approach was a very
 
 The process I used to solve the problem (looking for when moving robots line up to form a Christmas tree) changed compared to my Python solution. In that program, I solved the puzzle by visual inspection, which was awesome, but also hard to automate. Hence, in the Lil version, I at first tried to search for a 3x3 square of robots within the grid. The process of searching took much longer than I was satisfied with, so I changed to the current approach of testing whether the majority of the robots are close to the middle of the grid. (This is, of course, not a technique that would work for every input -- but it works here!)
 
-I think the ability of Lil to work with strings would make it a super-convenient language for scripting. I was not expecting the scripting language from a nostalgic HyperCard remake to go so hard! I've added a `.deck` file that animates this solution using Decker. (Since it will need to open external files, Decker must be compiled with `-DDANGER_ZONE` to run this deck.) My next step is to make the animation a little nicer. Perhaps I can rewind the last few steps of the process and animate the finale in slow-motion...
+I think the ability of Lil to work with strings would make it a super-convenient language for scripting. I was not expecting the scripting language from a nostalgic HyperCard remake to go so hard! I've added a `.deck` file that animates this solution using Decker. (Since it will need to open external files, Decker must be compiled with `-DDANGER_ZONE` to run this deck.) After finding the solution, it re-runs the last moments of the simulation in slow motion.
 
 **Lil**: come for Decker, stay for its scripting language.
 

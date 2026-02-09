@@ -25,10 +25,15 @@ on tree? robots do
             from robots
 end
 
-on paint_grid robots img do
+on paint_robots robots img val do
     each r in rows robots
-        img[r.px,r.py]:1
+        img[r.px,r.py]:val
     end
+    img
+end
+
+on paint_grid robots img do
+    img:paint_robots[robots img 1]
     if main_canvas
         main_canvas.paste[img]
     else
@@ -38,8 +43,27 @@ on paint_grid robots img do
             end]
         end
     end
-    each r in rows robots
-        img[(r.px,r.py)]:0
+    img:paint_robots[robots img 0]
+end
+
+on animate_single_step robots img subs delay do
+    if main_canvas
+        each i in range subs
+            rs:update px:WIDTH%px+vx*i/subs py:HEIGHT%py+vy*i/subs from robots
+            img:paint_robots[rs img 1]
+            main_canvas.paste[img]
+            img:paint_robots[rs img 0]
+            sleep[delay]
+        end
+    end
+end
+
+on animate_last_steps robots img rewind final_time do
+    rs:update px:WIDTH%px-rewind*vx py:HEIGHT%py-rewind*vy from robots
+    each i in range rewind
+        counter_text.text:"Time: %04i" format final_time+i-rewind
+        animate_single_step[rs img 256 2]
+        rs:update px:WIDTH%px+vx py:HEIGHT%py+vy from rs
     end
 end
 
@@ -84,8 +108,9 @@ on main fname do
         end
     end
     if main_canvas
-        counter_text.text:"Part 1: %i\nPart 2: %i" format part1,part2
+        animate_last_steps[robots visualiser 2 part2]
         paint_grid[robots visualiser]
+        counter_text.text:"Part 1: %i\nPart 2: %i" format part1,part2
     else
         print[part1]
         print[part2]
