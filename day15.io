@@ -11,11 +11,6 @@ Grid := Object clone do(
     at := method(r, c,
         rows at(r) at(c)
     )
-    moveObj := method(r, c, dr, dc,
-        obj := self at(r, c)
-        rows at(r) atPut(c, nil)
-        rows at(r + dr) atPut(c + dc, obj)
-    )
     gpsSum := method(
         rows reduce(total, row,
             row reduce(subtotal, obj,
@@ -38,7 +33,7 @@ Wall := Object clone do(
     canMove := method(_, _,
         return false
     )
-    gps := method(return 0)
+    gps := method(0)
 )
 
 SmallBox := Wall clone do(
@@ -52,10 +47,12 @@ SmallBox := Wall clone do(
         adj := warehouse at(row + dr, col + dc)
         adj ifNonNil(adj doMove(dr, dc))
         // Move self
-        warehouse moveObj(row, col, dr, dc)
+        warehouse rows at(row) atPut(col, nil)
         row = row + dr
         col = col + dc
+        warehouse rows at(row) atPut(col, self)
     )
+    gps := method((100 * row) + col)
 )
 
 Robot := SmallBox clone do(
@@ -78,7 +75,7 @@ Robot := SmallBox clone do(
         )
         canMove(dr, dc) ifTrue(doMove(dr, dc))
     )
-    gps := method(return 0)
+    gps := method(0)
 )
 
 asWarehouseObject := method(s,
@@ -89,8 +86,6 @@ asWarehouseObject := method(s,
         ".", nil
     ) clone
 )
-
-SmallBox gps := method((100 * row) + col)
 
 main := method(fname,
     // parse text
