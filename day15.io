@@ -1,23 +1,35 @@
 Grid := Object clone do(
-    rows := List clone
+    rows := list()
     robot := nil
-    addRow := method(s,
-        rows append(s asList map(col, chr,
+    appendRow := method(s,
+        // Objects are initialised in a second pass
+        rows append(s asList map(chr,
             obj := asWarehouseObject(chr)
-            (chr at(0) == 64) ifTrue(robot = obj)
-            obj init(self, rows size, col))
+            (chr at(0) == 64) ifTrue(robot = obj) // @ 64
+            obj)
         )
     )
-    at := method(r, c,
-        rows at(r) at(c)
+    initObjs := method(
+        rows foreach(r, row,
+            row foreach(c, obj,
+                obj init(self, r, c)
+                if(obj isKindOf(LargeBox), do(
+                    obj init(self, r, c - 1)
+                    row atPut(c - 1, obj)
+                ))
+            )
+        )
     )
-    gpsSum := method(
-        rows reduce(total, row,
-            row reduce(subtotal, obj,
-                subtotal + if(obj isNil, 0, obj gps),
-            0) + total,
-        0)
+    appendStretch := method(s,
+        appendRow(s asList map(switch(
+            "@", "@.",
+            "#", "##",
+            "O", "[]",
+            ".", "..")
+        ) join)
     )
+    at := method(r, c, rows at(r) at(c))
+    gpsSum := method(rows flatten select(hasSlot("gps")) unique map(gps) sum)
 )
 
 Wall := Object clone do(
@@ -30,22 +42,23 @@ Wall := Object clone do(
         col = c
         self
     )
-    canMove := method(_, _,
-        return false
-    )
-    gps := method(0)
+    canMove := method(_, _, false)
 )
 
 SmallBox := Wall clone do(
+    affectedObjects := method(dr, dc,
+        // Some "Objects" might be nil
+        list(warehouse at(row + dr, col + dc))
+    )
     canMove := method(dr, dc,
-        adj := warehouse at(row + dr, col + dc)
-        adj ifNil(return true)
-        adj canMove(dr, dc)
+        affectedObjects(dr, dc) \
+            remove(nil) \
+            map(canMove(dr, dc)) \
+            reduce(x, y, x and y, true)
     )
     doMove := method(dr, dc,
         // Move adj
-        adj := warehouse at(row + dr, col + dc)
-        adj ifNonNil(adj doMove(dr, dc))
+        affectedObjects(dr, dc) remove(nil) map(doMove(dr, dc))
         // Move self
         warehouse rows at(row) atPut(col, nil)
         row = row + dr
@@ -53,6 +66,32 @@ SmallBox := Wall clone do(
         warehouse rows at(row) atPut(col, self)
     )
     gps := method((100 * row) + col)
+)
+
+LargeBox := SmallBox clone do(
+    affectedObjects := method(dr, dc,
+        if(dc == 0,
+            return list(
+                warehouse at(row + dr, col),
+                warehouse at(row + dr, col + 1)
+            ) unique,
+            if (dc == 1,
+                return list(warehouse at(row, col + 2)),
+                return list(warehouse at(row, col - 1))
+            )
+        )
+    )
+    doMove := method(dr, dc,
+        // Move adj
+        affectedObjects(dr, dc) remove(nil) map(doMove(dr, dc))
+        // Move self
+        warehouse rows at(row) atPut(col, nil)
+        warehouse rows at(row) atPut(col + 1, nil)
+        row = row + dr
+        col = col + dc
+        warehouse rows at(row) atPut(col, self)
+        warehouse rows at(row) atPut(col + 1, self)
+    )
 )
 
 Robot := SmallBox clone do(
@@ -83,20 +122,30 @@ asWarehouseObject := method(s,
         "@", Robot,
         "#", Wall,
         "O", SmallBox,
+        "[", nil, // A pointer to LargeBox is placed here instead
+        "]", LargeBox,
         ".", nil
     ) clone
 )
 
 main := method(fname,
     // parse text
-    grid := Grid clone
     fp := File clone openForReading(fname)
-    parts := fp contents split("\n\n")
+    sections := fp contents split("\n\n")
     fp close
-    parts at(0) split("\n") foreach(line, grid addRow(line))
-    moves := parts at(1) split join
+    moves := sections at(1) split join
 
-    // simulate robot
+    // part 1
+    grid := Grid clone
+    sections at(0) split("\n") foreach(line, grid appendRow(line))
+    grid initObjs
+    moves foreach(move, grid robot tryMove(move))
+    writeln(grid gpsSum)
+
+    // part 2
+    grid rows empty
+    sections at(0) split("\n") foreach(line, grid appendStretch(line))
+    grid initObjs
     moves foreach(move, grid robot tryMove(move))
     writeln(grid gpsSum)
 )
