@@ -1,6 +1,10 @@
 Grid := Object clone do(
-    rows := list()
+    rows := nil
     robot := nil
+    init := method(
+        rows = List clone
+        robot = nil
+    )
     appendRow := method(s,
         // Objects are initialised in a second pass
         rows append(s asList mapInPlace(chr,
@@ -19,6 +23,7 @@ Grid := Object clone do(
                 ))
             )
         )
+        self
     )
     appendStretch := method(s,
         appendRow(s asList mapInPlace(switch(
@@ -33,7 +38,7 @@ Grid := Object clone do(
         gpsSum
     )
     at := method(r, c, rows at(r) at(c))
-    gpsSum := method(rows flatten select(hasSlot("gps")) unique mapInPlace(gps) sum)
+    gpsSum := method(rows flatten selectInPlace(hasSlot("gps")) unique mapInPlace(gps) sum)
 )
 
 Wall := Object clone do(
@@ -139,19 +144,16 @@ main := method(fname,
     fp close
     moves := sections at(1) split join
 
-    // part 1
     shortgrid := Grid clone
-    sections at(0) split("\n") foreach(line, shortgrid appendRow(line))
-    shortgrid initObjs
-
-    // part 2
     longgrid := Grid clone
-    longgrid rows = list()
-    sections at(0) split("\n") foreach(line, longgrid appendStretch(line))
-    longgrid initObjs
+    sections at(0) split("\n") foreach(line,
+        shortgrid appendRow(line)
+        longgrid appendStretch(line)
+    )
+    part1 := shortgrid initObjs solve(moves)
+    part2 := longgrid initObjs solve(moves)
 
-    solns := list(shortgrid, longgrid) mapInPlace(@ solve(moves))
-    writeln("#{solns at(0)}\n#{solns at(1)}" interpolate)
+    writeln("#{part1}\n#{part2}" interpolate)
 )
 
 main("input15.txt")
