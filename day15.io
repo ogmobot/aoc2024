@@ -3,7 +3,7 @@ Grid := Object clone do(
     robot := nil
     appendRow := method(s,
         // Objects are initialised in a second pass
-        rows append(s asList map(chr,
+        rows append(s asList mapInPlace(chr,
             obj := asWarehouseObject(chr)
             (chr at(0) == 64) ifTrue(robot = obj) // @ 64
             obj)
@@ -21,15 +21,19 @@ Grid := Object clone do(
         )
     )
     appendStretch := method(s,
-        appendRow(s asList map(switch(
+        appendRow(s asList mapInPlace(switch(
             "@", "@.",
             "#", "##",
             "O", "[]",
             ".", "..")
         ) join)
     )
+    solve := method(moves,
+        moves foreach(move, robot tryMove(move))
+        gpsSum
+    )
     at := method(r, c, rows at(r) at(c))
-    gpsSum := method(rows flatten select(hasSlot("gps")) unique map(gps) sum)
+    gpsSum := method(rows flatten select(hasSlot("gps")) unique mapInPlace(gps) sum)
 )
 
 Wall := Object clone do(
@@ -53,12 +57,12 @@ SmallBox := Wall clone do(
     canMove := method(dr, dc,
         affectedObjects(dr, dc) \
             remove(nil) \
-            map(canMove(dr, dc)) \
+            mapInPlace(canMove(dr, dc)) \
             reduce(x, y, x and y, true)
     )
     doMove := method(dr, dc,
         // Move adj
-        affectedObjects(dr, dc) remove(nil) map(doMove(dr, dc))
+        affectedObjects(dr, dc) remove(nil) foreach(doMove(dr, dc))
         // Move self
         warehouse rows at(row) atPut(col, nil)
         row = row + dr
@@ -83,7 +87,7 @@ LargeBox := SmallBox clone do(
     )
     doMove := method(dr, dc,
         // Move adj
-        affectedObjects(dr, dc) remove(nil) map(doMove(dr, dc))
+        affectedObjects(dr, dc) remove(nil) foreach(doMove(dr, dc))
         // Move self
         warehouse rows at(row) atPut(col, nil)
         warehouse rows at(row) atPut(col + 1, nil)
@@ -136,18 +140,18 @@ main := method(fname,
     moves := sections at(1) split join
 
     // part 1
-    grid := Grid clone
-    sections at(0) split("\n") foreach(line, grid appendRow(line))
-    grid initObjs
-    moves foreach(move, grid robot tryMove(move))
-    writeln(grid gpsSum)
+    shortgrid := Grid clone
+    sections at(0) split("\n") foreach(line, shortgrid appendRow(line))
+    shortgrid initObjs
 
     // part 2
-    grid rows empty
-    sections at(0) split("\n") foreach(line, grid appendStretch(line))
-    grid initObjs
-    moves foreach(move, grid robot tryMove(move))
-    writeln(grid gpsSum)
+    longgrid := Grid clone
+    longgrid rows = list()
+    sections at(0) split("\n") foreach(line, longgrid appendStretch(line))
+    longgrid initObjs
+
+    solns := list(shortgrid, longgrid) mapInPlace(@ solve(moves))
+    writeln("#{solns at(0)}\n#{solns at(1)}" interpolate)
 )
 
 main("input15.txt")
