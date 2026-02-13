@@ -16,7 +16,7 @@ Strictly speaking, it wasn't necessary to implement a frequency table to solve p
 
 **Syntax Highlight**: `OF` to lookup a field within a structure (or structure reference) -- very English-like!
 
-Day 02: [헐 (Heol)](https://wiki.xxiivv.com/site/heol.html)
+Day 02: [헐](https://wiki.xxiivv.com/site/heol.html) (Heol)
 -----------------------------------------------------------
 This is my third time writing a program for the [Varvara](https://wiki.xxiivv.com/site/varvara.html) virtual machine. (The first two times were in uxntal assembly [2022, Day 6] and UF [2023, Day 16]. Will I have to use the Sunflower BASIC port next time???) The Heol interpreter is very much a built-for-fun (or proof-of-concept) project, and still has a lot of rough edges. The way it utilises the Varvara machine's return stack means that there's a limit to how far recursion can take the program. The stack can contain up to 256 bytes (so 128 addresses); most of my functions go 5 or 6 nested brackets deep, each of which pushes an address to the stack; so even with a little bit of tail optimisation, that's only 25 or so nested function calls. This is fine for some languages, but a bit limiting for a LISP (which will often use recursion to map a function across a list, or fold a list into an accumulator, etc.). I made an attempt to modify the language's source to allow for tail-optimisation of recursive user functions, but didn't get very far. (In retrospect, perhaps I should have modified the language to keep track of return addresses elsewhere in memory, rather than the native uxn return address stack. This approach worked for UF, after all.)
 
@@ -191,3 +191,13 @@ I think the ability of Lil to work with strings would make it a super-convenient
 **Lil**: come for Decker, stay for its scripting language.
 
 **Syntax Highlight**: `&` (finds the minimum of its two operands, and therefore behaves like the `and` of other languages when used with booleans)
+
+Day 14: [Io](https://iolanguage.org)
+------------------------------------
+Now _this_ is Smalltalking! It's very clear where Io's inspiration comes from, and for my two cents, it feels like a better modern Smalltalk than Grace. Some parts of the syntax feel a little nicer, and the automatic indices in the `foreach` and `map` methods are very convenient for this puzzle. I suspect the lists that my solution uses are linked lists with $O(n)$ access, which contributes a lot to its slow speed, but I didn't look very hard for a constant-time data structure.
+
+This is a fiddly puzzle to solve. I tried a few different methods, in both the Python and Io solutions, before landing on something that worked. My Io solution puts a single item in two different grid coordinates, which seems to work a lot better for having two separate "left half-box" and "right half-box" objects.
+
+**Io**: a more modern Smalltalk.
+
+**Syntax Highlight**: `@` (sends an asynchronous message to an object)
