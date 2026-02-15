@@ -192,7 +192,7 @@ I think the ability of Lil to work with strings would make it a super-convenient
 
 **Syntax Highlight**: `&` (finds the minimum of its two operands, and therefore behaves like the `and` of other languages when used with booleans)
 
-Day 14: [Io](https://iolanguage.org)
+Day 15: [Io](https://iolanguage.org)
 ------------------------------------
 Now _this_ is Smalltalking! It's very clear where Io's inspiration comes from, and for my two cents, it feels like a better modern Smalltalk than Grace. Some parts of the syntax feel a little nicer, and the automatic indices in the `foreach` and `map` methods are very convenient for this puzzle. I suspect the lists that my solution uses are linked lists with $O(n)$ access, which contributes a lot to its slow speed, but I didn't look very hard for a constant-time data structure.
 
@@ -201,3 +201,13 @@ This is a fiddly puzzle to solve. I tried a few different methods, in both the P
 **Io**: a more modern Smalltalk.
 
 **Syntax Highlight**: `@` (sends an asynchronous message to an object)
+
+Day 16: [Clasp](https://clasp-developers.github.io)
+---------------------------------------------------
+Over the last few Advents of Code, Scheme has been far better represented than Common Lisp; hence, Clasp. Clasp takes advantage of the LLVM toolchain, so in theory, produces very fast native code binaries. This solution, however, takes almost 90 seconds to run, not including the 30-second startup time. (Steel Bank Common Lisp, by contrast, takes under 4 seconds; almost twice as fast as my Python solution. Perhaps SBCL is optimising data structures differently -- changing the priority queue internals from alists to vectors improved Clasp's time by 30 seconds, but had no effect on SBCL.) Rather than using a library priority queue, I decided to roll my own again. This probably contributes to the large amount of memory that the program needs (enough that SBCL will crash if its  `--dynamic-space-size` is too low). Perhaps this memory allocation is why Clasp takes so long on it?
+
+The long start-up time of Clasp meant that I did a lot of testing using SBCL; obviously, both Common Lisp implementations are capable of running Common Lisp programs. The same is probably true of the programs I wrote for Guile Scheme, Gambit Scheme and Scheme 9 from Empty Space (and perhaps even Femtolisp) -- this probably means they aren't really different languages!
+
+**Clasp**: it's just LISP (and uses LLVM).
+
+**Syntax Highlight**: `compile-file` (saves bytecode-ish compiled function definitions in a `.fasl` file, which -- in theory -- loads and runs just a little faster than a `.lisp` file)
