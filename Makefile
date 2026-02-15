@@ -1,6 +1,7 @@
-RUNNABLES := day01.sh day02.sh day03    day04.sh day05.be \
-             day06    day07.sh day08.js day09    day10.sh \
-             day11    day12
+RUNNABLES := day01.sh   day02.sh    day03       day04.sh    day05.be \
+             day06      day07.sh    day08.js    day09       day10.sh \
+             day11      day12       day13       day14.lil   day15.io \
+             day16.lisp
 
 dummy:
 
@@ -49,3 +50,8 @@ LILVDIR := $$HOME/git/lil_veosotano
 day13: day13.lil
 	$(LILVDIR)/lil --stdLilDir=$(LILVDIR)/std --compilerDir=$(LILVDIR) day13.lil
 	cp ./lil_build_tmp/debug/day13 .
+
+day16.fasl: day16.lisp
+	clasp --noinform --non-interactive --eval "(cl:compile-file \"day16.lisp\")"
+# (run with "clasp --noinform --non-interactive --load day16.fasl)
+# (alternatively, clasp --script day16.lisp)
