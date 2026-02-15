@@ -4,31 +4,31 @@
     ; cdr is test-fn
     ; car is tree
     ; => (('value . value) ('rank . rank) ('left . left-tree) ('right . right-tree))
+    ; or
+    ; => #(value rank left-tree right-tree)
     (cons nil test-fn))
 
 (defun hq-tree-get (tree key)
-    (cdr (assoc key tree)))
+    ; (cdr (assoc key tree)))
+    (aref tree (ecase key (value 0) (rank 1) (left 2) (right 3))))
 
 (defun hq-tree-set (tree key val)
-    (rplacd (assoc key tree) val))
+    ; (rplacd (assoc key tree) val))
+    (setf (aref tree (ecase key (value 0) (rank 1) (left 2) (right 3))) val))
 
 (defun hq-tree-new (value)
-    (list
-        (cons 'value value)
-        (cons 'rank 1)
-        (cons 'left nil)
-        (cons 'right nil)))
+    ; (list (cons 'value value) (cons 'rank 1) (cons 'left nil) (cons 'right nil)))
+    (vector value 1 nil nil))
 
 (defun merge-trees (a b test-fn)
-    (declare (type list a b) (type function test-fn))
     (cond
         ((null a) b)
         ((null b) a)
-        ((apply test-fn (list (cdr (assoc 'value b)) (cdr (assoc 'value a))))
+        ((apply test-fn (list (hq-tree-get b 'value) (hq-tree-get a 'value)))
             (merge-trees b a test-fn))
         (t (progn
             (hq-tree-set a 'right (merge-trees (hq-tree-get a 'right) b test-fn))
-            (if (null (cdr (assoc 'left a)))
+            (if (null (hq-tree-get a 'left))
                 (progn
                     (hq-tree-set a 'left (hq-tree-get a 'right))
                     (hq-tree-set a 'right nil)
@@ -44,7 +44,6 @@
             a))))
 
 (defun pop-heapq (heapq)
-    (declare (type list heapq))
     ;; modifies heapq in place
     (let ((tree (car heapq))
           (test-fn (cdr heapq)))
@@ -56,7 +55,6 @@
         (hq-tree-get tree 'value)))
 
 (defun push-heapq (value heapq)
-    (declare (type list heapq))
     ;; modifies heapq in place
     (let ((tree (car heapq))
           (test-fn (cdr heapq)))
