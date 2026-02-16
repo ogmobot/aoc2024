@@ -1,0 +1,81 @@
+#!/usr/bin/env nickle
+
+const PROGLEN = 16;
+
+void reset_vm(poly cpu, int a, int b, int c) {
+    /* Mutates cpu */
+    cpu->ip = 0;
+    cpu->op = 0;
+    cpu->a  = a;
+    cpu->b  = b;
+    cpu->c  = c;
+    return;
+}
+
+void step_vm(poly cpu) {
+    /* Mutates cpu */
+    int opcode = cpu->prog[cpu->ip++];
+    int operand = cpu->prog[cpu->ip++];
+    int combo = operand;
+    switch (operand) {
+    case 4: combo = cpu->a; break;
+    case 5: combo = cpu->b; break;
+    case 6: combo = cpu->c; break;
+    }
+    switch (opcode) {
+    case 0: /*adv*/ cpu->a >>= combo;                   break;
+    case 1: /*bxl*/ cpu->b ^= operand;                  break;
+    case 2: /*bst*/ cpu->b = combo & 7;                 break;
+    case 3: /*jnz*/ if (0 != cpu->a) cpu->ip = operand; break;
+    case 4: /*bxc*/ cpu->b ^= cpu->c;                   break;
+    case 5: /*out*/ cpu->output[cpu->op++] = combo & 7; break;
+    case 6: /*bdv*/ cpu->b = cpu->a >> combo;           break;
+    case 7: /*cdv*/ cpu->c = cpu->a >> combo;           break;
+    }
+    return;
+}
+
+void run_vm(poly cpu) {
+    /* Mutates cpu */
+    while (0 <= cpu->ip && cpu->ip < PROGLEN)
+        step_vm(cpu);
+    return;
+}
+
+void print_vm_output(poly cpu) {
+    for (int i = 0; i < cpu->op; i++)
+        printf("%d,", cpu->output[i]);
+    printf("\b \n");
+    return;
+}
+
+/* Initialise vm */
+
+(struct {
+    int ip; /* instruction pointer */
+    int op; /* output pointer */
+    int a;  /* register A */
+    int b;  /* register B */
+    int c;  /* register C */
+    int[PROGLEN] prog;
+    int[PROGLEN] output;
+}) cpu = {ip = 0, op = 0};
+
+/* Load data */
+
+int[3] regs;
+string buffer;
+file fp = File::open("input17.txt", "r");
+File::fscanf(fp, "Register A: %d\n", &regs[0]);
+File::fscanf(fp, "Register B: %d\n", &regs[1]);
+File::fscanf(fp, "Register C: %d\n\n", &regs[2]);
+File::fscanf(fp, "Program: %s\n", &buffer);
+File::close(fp);
+for (int i = 0; 2*i < String::length(buffer); i++) {
+    cpu.prog[i] = string_to_integer(String::substr(buffer, 2*i, 1));
+}
+
+/* Part 1 */
+reset_vm(&cpu, regs[0], regs[1], regs[2]);
+run_vm(&cpu);
+print_vm_output(&cpu);
