@@ -1,9 +1,12 @@
 #!/usr/bin/env nickle
 
-const PROGLEN = 16;
+const PROGLEN = 0x10;
+const OUTLEN = 0x100;
 
 void reset_vm(poly cpu, int a, int b, int c) {
     /* Mutates cpu */
+    for (int i = 0; i < OUTLEN; i++)
+        cpu->output[i] = -1;
     cpu->ip = 0;
     cpu->op = 0;
     cpu->a  = a;
@@ -49,6 +52,26 @@ void print_vm_output(poly cpu) {
     return;
 }
 
+int match_digit(poly cpu, int[3] regs, int index) {
+    /* matches this digit of the output, then recurses */
+    /* index varies from 0 up to PROGLEN - 1 */
+    if (index >= PROGLEN)
+        return regs[0];
+    for (int bits = 0; bits < 8; bits++) {
+        int a = regs[0] | (bits << (3 * (PROGLEN - 1 - index)));
+        reset_vm(cpu, a, regs[1], regs[2]);
+        run_vm(cpu);
+
+        if (cpu->output[PROGLEN-1 - index] == cpu->prog[PROGLEN-1 - index]) {
+            int[3] new_regs = {a, regs[1], regs[2]};
+            int recurse_result = match_digit(cpu, new_regs, index + 1);
+            if (recurse_result != -1)
+                return recurse_result;
+        }
+    }
+    return -1;
+}
+
 /* Initialise vm */
 
 (struct {
@@ -58,7 +81,7 @@ void print_vm_output(poly cpu) {
     int b;  /* register B */
     int c;  /* register C */
     int[PROGLEN] prog;
-    int[PROGLEN] output;
+    int[OUTLEN] output;
 }) cpu = {ip = 0, op = 0};
 
 /* Load data */
@@ -71,11 +94,15 @@ File::fscanf(fp, "Register B: %d\n", &regs[1]);
 File::fscanf(fp, "Register C: %d\n\n", &regs[2]);
 File::fscanf(fp, "Program: %s\n", &buffer);
 File::close(fp);
-for (int i = 0; 2*i < String::length(buffer); i++) {
-    cpu.prog[i] = string_to_integer(String::substr(buffer, 2*i, 1));
+for (int i = 0; 2 * i < String::length(buffer); i++) {
+    cpu.prog[i] = string_to_integer(String::substr(buffer, 2 * i, 1));
 }
 
 /* Part 1 */
 reset_vm(&cpu, regs[0], regs[1], regs[2]);
 run_vm(&cpu);
 print_vm_output(&cpu);
+
+/* Part 2 */
+regs[0] = 0;
+printf("%d\n", match_digit(&cpu, regs, 0));
