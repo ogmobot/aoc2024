@@ -211,3 +211,15 @@ The long start-up time of Clasp meant that I did a lot of testing using SBCL; ob
 **Clasp**: it's just LISP (and uses LLVM).
 
 **Syntax Highlight**: `compile-file` (saves bytecode-ish compiled function definitions in a `.fasl` file, which -- in theory -- loads and runs just a little faster than a `.lisp` file)
+
+Day 17: [Nickle](https://nickle.org)
+------------------------------------
+I don't think I've ever used a scripting language with syntax this similar to C's (unless you count HolyC!). It seems like Nickle originated as a calculator extension language of sorts, but the fact that it has strings, file i/o, structures and _pointers_ suggests it has moved a bit further than that. It feels very comfortable to program in, and what it lacks in string operations it makes up for in arbitrary precision arithmetic (not that my solution uses either one of those, ha). I wasn't able to get a good feel of its speed relative to other scripting languages, but it does some level of compilation and its interpreter starts very quickly.
+
+My Python solution for this problem started with the least significant base-8 "digit" of the solution and then searched upwards. However, the puzzle's instructions mangle the less significant digits by xor-ing them with more significant ones, so I compensated by sprinkling in some randomness. (This accounts for some of the program's slow speed.) My Nickle solution instead starts with the most significant digits, then works down, and so doesn't need to worry about that.
+
+Also, the file extension `.5c` is very cute.
+
+**Nickle**: worth more than it sounds.
+
+**Syntax Highlight**: `poly` (superclass of all other data types; a variable of this type can have any value, so it's a way to disable type-checking)
