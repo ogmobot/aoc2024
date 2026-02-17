@@ -1,11 +1,22 @@
 #!/usr/bin/env nickle
 
-const PROGLEN = 0x10;
-const OUTLEN = 0x100;
+const MAXPROGLEN = 0x100;
+const MAXOUTLEN = 0x100;
 
-void reset_vm(poly cpu, int a, int b, int c) {
+typedef (struct {
+    int ip; /* instruction pointer */
+    int op; /* output pointer */
+    int a;  /* register A */
+    int b;  /* register B */
+    int c;  /* register C */
+    int pl; /* length of program */
+    int[MAXPROGLEN] prog;
+    int[MAXOUTLEN] output;
+}) cpu_t;
+
+void reset_vm(*cpu_t cpu, int a, int b, int c) {
     /* Mutates cpu */
-    for (int i = 0; i < OUTLEN; i++)
+    for (int i = 0; i < MAXOUTLEN; i++)
         cpu->output[i] = -1;
     cpu->ip = 0;
     cpu->op = 0;
@@ -15,7 +26,7 @@ void reset_vm(poly cpu, int a, int b, int c) {
     return;
 }
 
-void step_vm(poly cpu) {
+void step_vm(*cpu_t cpu) {
     /* Mutates cpu */
     int opcode = cpu->prog[cpu->ip++];
     int operand = cpu->prog[cpu->ip++];
@@ -24,6 +35,7 @@ void step_vm(poly cpu) {
     case 4: combo = cpu->a; break;
     case 5: combo = cpu->b; break;
     case 6: combo = cpu->c; break;
+    case 7: /* undefined behaviour; do nothing */ break;
     }
     switch (opcode) {
     case 0: /*adv*/ cpu->a >>= combo;                   break;
@@ -38,33 +50,36 @@ void step_vm(poly cpu) {
     return;
 }
 
-void run_vm(poly cpu) {
+void run_vm(*cpu_t cpu) {
     /* Mutates cpu */
-    while (0 <= cpu->ip && cpu->ip < PROGLEN)
+    while (0 <= cpu->ip && cpu->ip < cpu->pl)
         step_vm(cpu);
     return;
 }
 
-void print_vm_output(poly cpu) {
+void print_vm_output(*cpu_t cpu) {
     for (int i = 0; i < cpu->op; i++)
         printf("%d,", cpu->output[i]);
     printf("\b \n");
     return;
 }
 
-int match_digit(poly cpu, int[3] regs, int index) {
+int match_digit(*cpu_t cpu, int[3] regs, int dig_index) {
     /* matches this digit of the output, then recurses */
-    /* index varies from 0 up to PROGLEN - 1 */
-    if (index >= PROGLEN)
+    /* dig_index varies from 0 up to cpu->pl - 1 */
+    /* Mutates cpu */
+    if (dig_index >= cpu->pl)
         return regs[0];
     for (int bits = 0; bits < 8; bits++) {
-        int a = regs[0] | (bits << (3 * (PROGLEN - 1 - index)));
+        int a = regs[0] | (bits << (3 * (cpu->pl - 1 - dig_index)));
         reset_vm(cpu, a, regs[1], regs[2]);
         run_vm(cpu);
 
-        if (cpu->output[PROGLEN-1 - index] == cpu->prog[PROGLEN-1 - index]) {
-            int[3] new_regs = {a, regs[1], regs[2]};
-            int recurse_result = match_digit(cpu, new_regs, index + 1);
+        if (cpu->output[cpu->pl - 1 - dig_index]
+            == cpu->prog[cpu->pl - 1 - dig_index]
+        ) {
+            int recurse_result =
+                match_digit(cpu, (int[3]){a, regs[1], regs[2]}, dig_index + 1);
             if (recurse_result != -1)
                 return recurse_result;
         }
@@ -74,18 +89,6 @@ int match_digit(poly cpu, int[3] regs, int index) {
 
 /* Initialise vm */
 
-(struct {
-    int ip; /* instruction pointer */
-    int op; /* output pointer */
-    int a;  /* register A */
-    int b;  /* register B */
-    int c;  /* register C */
-    int[PROGLEN] prog;
-    int[OUTLEN] output;
-}) cpu = {ip = 0, op = 0};
-
-/* Load data */
-
 int[3] regs;
 string buffer;
 file fp = File::open("input17.txt", "r");
@@ -94,9 +97,10 @@ File::fscanf(fp, "Register B: %d\n", &regs[1]);
 File::fscanf(fp, "Register C: %d\n\n", &regs[2]);
 File::fscanf(fp, "Program: %s\n", &buffer);
 File::close(fp);
-for (int i = 0; 2 * i < String::length(buffer); i++) {
-    cpu.prog[i] = string_to_integer(String::substr(buffer, 2 * i, 1));
-}
+
+cpu_t cpu = {ip = 0, op = 0, pl = 0};
+for (int i = 0; i < String::length(buffer); i += 2)
+    cpu.prog[cpu.pl++] = string_to_integer(String::substr(buffer, i, 1));
 
 /* Part 1 */
 reset_vm(&cpu, regs[0], regs[1], regs[2]);
