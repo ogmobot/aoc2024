@@ -64,24 +64,41 @@ define void @exit(i64 %exitcode) alwaysinline noreturn {
 define ptr @load_file(ptr %fname) {
     ; read-only: 0
     %fd = call i64 @open(ptr %fname, i64 0, i64 0)
-    ; max file size: 4096
+    ; max file size: 32768
     ; prot_read: 1
     ; map_private: 2
-    %contents = call ptr @mmap(i64 0, i64 4096, i64 1, i64 2, i64 %fd, i64 0)
+    %contents = call ptr @mmap(i64 0, i64 32768, i64 1, i64 2, i64 %fd, i64 0)
     call i64 @close(i64 %fd)
     ; can still use mapped memory after file is closed
     ret ptr %contents
 }
 
 define i64 @unload_file(ptr %contents) {
-    ; max file size: 4096
-    %errno = call i64 @munmap(ptr %contents, i64 4096)
+    ; max file size: 32768
+    %errno = call i64 @munmap(ptr %contents, i64 32768)
     ret i64 %errno
 }
 
-define void @print_int(i64 %val) {
+define void @print_i64(i64 %val) {
     ;; TODO
     ret void
+}
+
+define ptr @writeln(ptr %s.orig) {
+loop.header:
+    br label %loop
+loop:
+    %s = phi ptr [ %s.orig, %loop.header ], [ %s.next, %loop ]
+    %s.next = getelementptr i8, ptr %s, i64 1
+    %c = load i8, ptr %s, align 1
+    %is.nl = icmp eq i8 %c, 10
+    br i1 %is.nl, label %write, label %loop
+write:
+    %s.orig.int = ptrtoint ptr %s.orig to i64
+    %s.next.int = ptrtoint ptr %s.next to i64
+    %len = sub i64 %s.next.int, %s.orig.int
+    call i64 @write(i64 1, ptr %s.orig, i64 %len)
+    ret ptr %s.next
 }
 
 ;;; main functions
@@ -89,12 +106,16 @@ define void @print_int(i64 %val) {
 define i64 @main() {
     call void @print_i64(i64 12345)
 
-    %contents = call ptr @load_file(ptr @input_file)
-    call i64 @unload_file(ptr %contents)
+    %contents.0 = call ptr @load_file(ptr @input_file)
+    ; output first three lines for testing...
+    %contents.1 = call ptr @writeln(ptr %contents.0)
+    %contents.2 = call ptr @writeln(ptr %contents.1)
+    %contents.3 = call ptr @writeln(ptr %contents.2)
+    call i64 @unload_file(ptr %contents.0)
 
     ; stdout = 1
     call i64 @write(i64 1, ptr @msg, i64 15)
-    ret i64 6
+    ret i64 123
 }
 
 ;; _start function so that C runtime doesn't need to be linked
@@ -115,9 +136,9 @@ define void @_start() naked {
 @input_file = private constant [12 x i8] c"input18.txt\00"
 @output_buffer = private global [8 x i8] c"      \0a\00"
 
-; @READ_ONLY = alias i64 0
-; @PROT_READ = alias i64 1
-; @PROT_WRITE = alias i64 2
-; @MAP_PRIVATE = alias i64 2
-; @MAP_ANONYMOUS = alias i64 32
-; @MAX_FILE_SIZE = alias i64 16384
+; @READ_ONLY     = 0
+; @PROT_READ     = 1
+; @PROT_WRITE    = 2
+; @MAP_PRIVATE   = 2
+; @MAP_ANONYMOUS = 32
+; @MAX_FILE_SIZE = 32768

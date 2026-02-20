@@ -57,7 +57,7 @@ day16.fasl: day16.lisp
 # (alternatively, clasp --script day16.lisp)
 
 day18: day18.ll
-	opt-15 day18.ll -o day18.bc
-	clang-15 -c day18.bc -o day18.o
+	opt-15 -O2 day18.ll -o day18.bc
+	clang-15 -O2 -c day18.bc -o day18.o
 	ld day18.o -o day18
 # clang symlinks to clang-14 on my system, which can't easily optimise ptr types
