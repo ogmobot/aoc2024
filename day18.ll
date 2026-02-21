@@ -366,31 +366,35 @@ findpath:
     ret ptr %line.next
 }
 
-define i64 @main() {
-    ;call void @print_u64(i64 123454321)
+define void @part2(ptr %contents, ptr %grid.start) {
+drop.header:
+    br label %drop
+drop:
+    %line = phi ptr [ %contents, %drop.header ], [ %line.next, %found.path ]
+    call void @drop_from_line(ptr %line, ptr %grid.start)
+    %path.result = call i64 @bfs(ptr %grid.start)
+    %path.failed = icmp eq i64 %path.result, -1
+    br i1 %path.failed, label %no.path, label %found.path
+found.path:
+    %line.next = call ptr @next_line(ptr %line)
+    br label %drop
+no.path:
+    call void @write_line(ptr %line)
+    ret void
+}
 
-    %contents.0 = call ptr @load_file(ptr @input_file)
-    ; output first three lines for testing...
-    ;%contents.1 = call ptr @write_line(ptr %contents.0)
-    ;%contents.2 = call ptr @write_line(ptr %contents.1)
-    ;%contents.3 = call ptr @write_line(ptr %contents.2)
+define i64 @main() {
+    %contents = call ptr @load_file(ptr @input_file)
 
     %grid.ref = call ptr @setup_grid()
-    ;%grid.2 = call ptr @write_line(ptr %grid.ref)
-    ;%grid.3 = call ptr @write_line(ptr %grid.2)
-    ;%grid.4 = call ptr @write_line(ptr %grid.3)
-    ;call void @print_grid(ptr %grid.ref)
     %grid.start = getelementptr i8, ptr %grid.ref, i64 72
 
-    call void @part1(ptr %contents.0, ptr %grid.start)
-    ;call void @print_grid(ptr %grid.ref)
+    %dropped.1kb = call ptr @part1(ptr %contents, ptr %grid.start)
+    call void @part2(ptr %dropped.1kb, ptr %grid.start)
 
-    ; stdout = 1
-    ;call i64 @write(i64 1, ptr @msg, i64 15)
-
-    call i64 @unload_file(ptr %contents.0)
+    call i64 @unload_file(ptr %contents)
     call ptr @cleanup_grid(ptr %grid.ref)
-    ret i64 123
+    ret i64 0
 }
 
 ;; _start function so that C runtime doesn't need to be linked
@@ -407,5 +411,4 @@ define void @_start() naked {
 
 ;; constants
 
-@msg = private constant [15 x i8] c"hello, world!\0a\00"
 @input_file = private constant [12 x i8] c"input18.txt\00"
