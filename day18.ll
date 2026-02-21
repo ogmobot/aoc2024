@@ -261,7 +261,6 @@ define i64 @bfs(ptr %grid.start) {
     %queue.ref.inc = getelementptr i32, ptr %queue.ref, i64 1
     %queue.head.addr = alloca i64
     %queue.tail.addr = alloca i64
-    %ret.val = alloca i64
     store i64 0, ptr %queue.head.addr
     ; push first node
     store i32 0, ptr %queue.ref     ; index
@@ -336,6 +335,75 @@ ret.fail:
     ret i64 -1
 }
 
+define i64 @dfs(ptr %grid.start) {
+    %stack.base         = alloca i32, i64 8192, align 4
+    %stack.height.addr  = alloca i64
+    %stack.base.inc     = getelementptr i32, ptr %stack.base, i64 1
+    store i32 0, ptr %stack.base     ; index
+    store i32 0, ptr %stack.base.inc ; dist
+    store i64 2, ptr %stack.height.addr
+    br label %explore
+explore:
+    %stack.height = load i64, ptr %stack.height.addr
+    %exhausted = icmp eq i64 %stack.height, 0
+    br i1 %exhausted, label %ret.fail, label %pop.stack
+pop.stack:
+    %s.0 = getelementptr i32, ptr %stack.base, i64 %stack.height
+    %index.addr = getelementptr i32, ptr %s.0, i64 -2
+    %dist.addr  = getelementptr i32, ptr %s.0, i64 -1
+    %index = load i32, ptr %index.addr, align 4
+    %dist  = load i32, ptr %dist.addr, align 4
+    %stack.height.dec  = sub i64 %stack.height, 2
+    store i64 %stack.height.dec, ptr %stack.height.addr
+
+    ; check/mark if visited
+    %loc = getelementptr i8, ptr %grid.start, i32 %index
+    %c = load i8, ptr %loc
+    %is.valid = icmp eq i8 %c, 46 ; .
+    br i1 %is.valid, label %mark.visited, label %explore
+mark.visited:
+    %c.flagged = or i8 %c, 128
+    store i8 %c.flagged, ptr %loc
+
+    %found.exit = icmp eq i32 %index, 5110 ; = 70*72 + 70
+    br i1 %found.exit, label %ret.success, label %append.adj
+    ; this flags sticks around beyond the function
+append.adj:
+    ; set up values to store and addresses
+    %dist.inc = add i32 %dist, 1
+    %index.west = sub i32 %index, 1
+    %index.east = add i32 %index, 1
+    %index.north = sub i32 %index, 72
+    %index.south = add i32 %index, 72
+
+    %s.1 = getelementptr i32, ptr %s.0, i64 1
+    %s.2 = getelementptr i32, ptr %s.1, i64 1
+    %s.3 = getelementptr i32, ptr %s.2, i64 1
+    %s.4 = getelementptr i32, ptr %s.3, i64 1
+    %s.5 = getelementptr i32, ptr %s.4, i64 1
+    %s.6 = getelementptr i32, ptr %s.5, i64 1
+    %s.7 = getelementptr i32, ptr %s.6, i64 1
+    %s.8 = getelementptr i32, ptr %s.7, i64 1
+    %stack.height.inc = add i64 %stack.height, 8
+    store i64 %stack.height.inc, ptr %stack.height.addr
+    ; store them
+    store i32 %index.west,  ptr %s.0, align 4
+    store i32 %dist.inc,    ptr %s.1, align 4
+    store i32 %index.east,  ptr %s.2, align 4
+    store i32 %dist.inc,    ptr %s.3, align 4
+    store i32 %index.north, ptr %s.4, align 4
+    store i32 %dist.inc,    ptr %s.5, align 4
+    store i32 %index.south, ptr %s.6, align 4
+    store i32 %dist.inc,    ptr %s.7, align 4
+
+    br label %explore
+ret.success:
+    %dist.i64 = zext i32 %dist to i64
+    ret i64 %dist.i64
+ret.fail:
+    ret i64 -1
+}
+
 define void @clear_flags(ptr %grid.start) {
 loop.header:
     br label %loop
@@ -376,17 +444,15 @@ define void @part2(ptr %contents, ptr %grid.start) {
 drop.header:
     br label %drop
 drop:
-    %line = phi ptr [ %contents, %drop.header ], [ %line.next, %found.path ], [ %line.next, %drop ]
+    %line = phi ptr [ %contents, %drop.header ], [ %line.next, %route.recalculation ], [ %line.next, %drop ]
     %collision = call i1 @drop_from_line(ptr %line, ptr %grid.start)
     %line.next = call ptr @next_line(ptr %line)
     br i1 %collision, label %route.recalculation, label %drop
 route.recalculation:
     call void @clear_flags(ptr %grid.start)
-    %path.result = call i64 @bfs(ptr %grid.start)
+    %path.result = call i64 @dfs(ptr %grid.start)
     %path.failed = icmp eq i64 %path.result, -1
-    br i1 %path.failed, label %no.path, label %found.path
-found.path:
-    br label %drop
+    br i1 %path.failed, label %no.path, label %drop
 no.path:
     call void @write_line(ptr %line)
     ret void
