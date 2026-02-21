@@ -11,6 +11,7 @@ Day 02
 * Python/CPython: 0.216s
 * Python/PyPy: 1.417s
 * 헐: 4.881s
+\* substantially different algorithm
 
 Day 03
 ------
@@ -34,13 +35,15 @@ Day 06
 ------
 * Python/CPython: 1m47.099s
 * Python/PyPy: 32.207s
-* V: 10.100s
+* V\*: 10.100s
+\* uses concurrency
 
 Day 07
 ------
 * Python/CPython: 0.315s
 * Python/PyPy: 1.557s
 * Amber: 21m52.602s
+\* pretty different algorithm
 
 Day 08
 ------
@@ -53,6 +56,7 @@ Day 09
 * Python/CPython: 5m15.247s
 * Python/PyPy: 2m0.228s
 * Objective-C: 0.798s
+\* substantially different algorithm
 
 Day 10
 ------
@@ -71,6 +75,7 @@ Day 12
 * Python/CPython: 3.586s
 * Python/PyPy: 3.507s
 * LIL: 1m56.754s
+\* pretty different algorithm
 
 Day 13
 ------
@@ -80,31 +85,37 @@ Day 13
 
 Day 14
 ------
-* Python/CPython: 38.598s
-* Python/PyPy: 30.571s
+* Python/CPython\*: 38.598s
+* Python/PyPy\*: 30.571s
 * Lil: 12.711s
+\* substantially different algorithm (image detection carried out by eye!)
 
 Day 15
 ------
 * Python/CPython: 4.674s
 * Python/PyPy: 4.904s
 * Io: 53.734s
+\* pretty different algorithm
 
 Day 16
 ------
 * Python/CPython: 5.626s
 * Python/PyPy: 8.777s
-* Clasp: 1m51.382s
+* Common Lisp/Clasp: 1m51.382s
+* Common Lisp/SBCL: 3.396s
 
 Day 17
 ------
-* Python/CPython: 13.674s
-* Python/PyPy: 1.942s
+* Python/CPython\*: 13.674s
+* Python/PyPy\*: 1.942s
+* Nickle: 0.238s
+\* pretty different algorithm (non-deterministic)
 
 Day 18
 ------
 * Python/CPython: 0.416s
 * Python/PyPy: 3.853s
+* LLVM IR: 0.016s
 
 Day 19
 ------
