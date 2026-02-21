@@ -200,7 +200,8 @@ define i64 @cleanup_grid(ptr %grid.ref) {
     ret i64 %errno
 }
 
-define void @drop_from_line(ptr %line, ptr %grid.start) {
+define i1 @drop_from_line(ptr %line, ptr %grid.start) {
+    ; returns whether the coordinate had been flagged as "visited"
     ;; parse x and y
 parse.begin:
     br label %parse_x_digit
@@ -249,8 +250,10 @@ y.done:
     %y.72 = mul i64 %y.acc, 72
     %offset = add i64 %y.72, %x.acc
     %obstacle = getelementptr i8, ptr %grid.start, i64 %offset
+    %c.current = load i8, ptr %obstacle
+    %retval = icmp ugt i8 %c.current, 127
     store i8 35, ptr %obstacle
-    ret void
+    ret i1 %retval
 }
 
 define i64 @bfs(ptr %grid.start) {
@@ -291,6 +294,7 @@ mark.visited:
 
     %found.exit = icmp eq i32 %index, 5110 ; = 70*72 + 70
     br i1 %found.exit, label %ret.success, label %append.adj
+    ; this flags sticks around beyond the function
 append.adj:
     ; set up values to store and addresses
     %dist.inc = add i32 %dist, 1
@@ -327,23 +331,25 @@ append.adj:
     br label %explore
 ret.success:
     %dist.i64 = zext i32 %dist to i64
-    store i64 %dist.i64, ptr %ret.val
-    br label %clear.flags
+    ret i64 %dist.i64
 ret.fail:
-    store i64 -1, ptr %ret.val
-    br label %clear.flags
-clear.flags:
-    %i = phi i64 [ 0, %ret.success ], [ 0, %ret.fail ], [ %i.inc, %clear.flags ]
+    ret i64 -1
+}
+
+define void @clear_flags(ptr %grid.start) {
+loop.header:
+    br label %loop
+loop:
+    %i = phi i64 [ 0, %loop.header ], [ %i.inc, %loop ]
     %i.inc = add i64 %i, 1
     %c.uncleared.addr = getelementptr i8, ptr %grid.start, i64 %i
     %c.uncleared = load i8, ptr %c.uncleared.addr, align 1
     %c.cleared = and i8 %c.uncleared, 127
     store i8 %c.cleared, ptr %c.uncleared.addr
     %clear.done = icmp eq i64 %i, 5110
-    br i1 %clear.done, label %finally, label %clear.flags
-finally:
-    %ret = load i64, ptr %ret.val, align 8
-    ret i64 %ret
+    br i1 %clear.done, label %done, label %loop
+done:
+    ret void
 }
 
 ;;; main functions
@@ -357,7 +363,7 @@ drop:
     %counter = phi i64 [ 0, %drop.header ], [ %counter.inc, %drop ]
     %counter.inc = add i64 %counter, 1
     %line.next = call ptr @next_line(ptr %line)
-    call void @drop_from_line(ptr %line, ptr %grid.start)
+    call i1 @drop_from_line(ptr %line, ptr %grid.start)
     %is.1kb = icmp eq i64 %counter.inc, 1024
     br i1 %is.1kb, label %findpath, label %drop
 findpath:
@@ -370,13 +376,16 @@ define void @part2(ptr %contents, ptr %grid.start) {
 drop.header:
     br label %drop
 drop:
-    %line = phi ptr [ %contents, %drop.header ], [ %line.next, %found.path ]
-    call void @drop_from_line(ptr %line, ptr %grid.start)
+    %line = phi ptr [ %contents, %drop.header ], [ %line.next, %found.path ], [ %line.next, %drop ]
+    %collision = call i1 @drop_from_line(ptr %line, ptr %grid.start)
+    %line.next = call ptr @next_line(ptr %line)
+    br i1 %collision, label %route.recalculation, label %drop
+route.recalculation:
+    call void @clear_flags(ptr %grid.start)
     %path.result = call i64 @bfs(ptr %grid.start)
     %path.failed = icmp eq i64 %path.result, -1
     br i1 %path.failed, label %no.path, label %found.path
 found.path:
-    %line.next = call ptr @next_line(ptr %line)
     br label %drop
 no.path:
     call void @write_line(ptr %line)
