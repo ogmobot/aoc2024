@@ -196,7 +196,7 @@ Day 15: [Io](https://iolanguage.org)
 ------------------------------------
 Now _this_ is Smalltalking! It's very clear where Io's inspiration comes from, and for my two cents, it feels like a better modern Smalltalk than Grace. Some parts of the syntax feel a little nicer, and the automatic indices in the `foreach` and `map` methods are very convenient for this puzzle. I suspect the lists that my solution uses are linked lists with $O(n)$ access, which contributes a lot to its slow speed, but I didn't look very hard for a constant-time data structure.
 
-This is a fiddly puzzle to solve. I tried a few different methods, in both the Python and Io solutions, before landing on something that worked. My Io solution puts a single item in two different grid coordinates, which seems to work a lot better for having two separate "left half-box" and "right half-box" objects.
+This is a fiddly puzzle to solve. I tried a few different methods, in both the Python and Io solutions, before landing on something that worked. My Io solution puts a single item in two different grid coordinates, which seems to work a lot better than having two separate "left half-box" and "right half-box" objects.
 
 **Io**: a more modern Smalltalk.
 
@@ -223,3 +223,13 @@ Also, the file extension `.5c` is very cute.
 **Nickle**: worth more than it sounds.
 
 **Syntax Highlight**: `poly` (superclass of all other data types; a variable of this type can have any value, so it's a way to disable type-checking)
+
+Day 18: [LLVM IR](https://llvm.org)
+-----------------------------------
+I didn't want to complete this challenge without using an assembly language, and LLVM's Intermediate Representation language seemed close enough. It has a lot of differences from another assembly langauges I've used, most of which make it easier to work with; in particular, typechecking and immutable variables made things easier to keep track of, and labels being local to functions meant I didn't pollute the label "namespace". On the flip side, the language has no way to define constants, because those are supposed to be transferred in from the language being compiled; and the immutability thing makes loops harder to read.
+
+There is a bit of weirdness in my solution. I wrote a function capable of printing a 20-digit, 64-bit integer; but the value it needs to print for this puzzle could never exceed 4 digits. Rather than writing a function to parse numbers out of the input text, I wrote a function to parse the exact shape of a line _and_ modify the puzzle's grid accordingly. As with the x86-64 Assembly solution in the 2023 challenge, I wanted to use syscalls instead of linking C malloc/io libraries. However, I ended up linking the libraries anyway, because the llvm optimisation process wanted to call the `memset` function. I could have asked the compiler _not_ to optimise, I guess but... I like going fast.
+
+**LLVM IR**: you probably shouldn't try to write this by hand.
+
+**Syntax Highlight**: `phi` (sets the value of a variable depending on the name of the last-executed block of code)
