@@ -233,3 +233,13 @@ There is a bit of weirdness in my solution. I wrote a function capable of printi
 **LLVM IR**: you probably shouldn't try to write this by hand.
 
 **Syntax Highlight**: `phi` (sets the value of a variable depending on the name of the last-executed block of code)
+
+Day 19: [C3](https://c3-lang.org)
+---------------------------------
+The n+2th "C but better" language I've used. C3 features the temporary allocation macros of languages like Objective-C, the `defer` keyword of languages like Zig, the `:` iteration syntax of languages like C++, the use of "slices" rather than raw strings or arrays, namespaces, incremental conversion of projects, and the native use of C libraries (like many other "C but better" languages). It's certainly doing what it says on the tin! The language itself is unoffensive and should feel pretty familiar to anyone who's written in C++ (or another "C but better" language) before. The compiler actually works, too.
+
+My Python solution to this problem used a "top-down" dynamic programming approach and simply cached a recursive call. The C3 version instead uses a "bottom-up" approach and counts the ways of reaching each state of the pattern. Both are pretty quick, but I suspect the bottom-up approach would be a bit quicker even if the programs were running at the same speed.
+
+**C3**: it's C, but better, again.
+
+**Syntax Highlight**: `tmalloc` (a function which, when used inside a temporary memory `@pool`, automatically releases its allocated memory)
