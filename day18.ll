@@ -348,13 +348,12 @@ explore:
     %exhausted = icmp eq i64 %stack.height, 0
     br i1 %exhausted, label %ret.fail, label %pop.stack
 pop.stack:
-    %s.0 = getelementptr i32, ptr %stack.base, i64 %stack.height
-    %index.addr = getelementptr i32, ptr %s.0, i64 -2
-    %dist.addr  = getelementptr i32, ptr %s.0, i64 -1
-    %index = load i32, ptr %index.addr, align 4
-    %dist  = load i32, ptr %dist.addr, align 4
     %stack.height.dec  = sub i64 %stack.height, 2
     store i64 %stack.height.dec, ptr %stack.height.addr
+    %s.0 = getelementptr i32, ptr %stack.base, i64 %stack.height.dec
+    %s.1 = getelementptr i32, ptr %s.0, i64 1
+    %index = load i32, ptr %s.0, align 4
+    %dist  = load i32, ptr %s.1, align 4
 
     ; check/mark if visited
     %loc = getelementptr i8, ptr %grid.start, i32 %index
@@ -376,7 +375,6 @@ append.adj:
     %index.north = sub i32 %index, 72
     %index.south = add i32 %index, 72
 
-    %s.1 = getelementptr i32, ptr %s.0, i64 1
     %s.2 = getelementptr i32, ptr %s.1, i64 1
     %s.3 = getelementptr i32, ptr %s.2, i64 1
     %s.4 = getelementptr i32, ptr %s.3, i64 1
@@ -384,7 +382,7 @@ append.adj:
     %s.6 = getelementptr i32, ptr %s.5, i64 1
     %s.7 = getelementptr i32, ptr %s.6, i64 1
     %s.8 = getelementptr i32, ptr %s.7, i64 1
-    %stack.height.inc = add i64 %stack.height, 8
+    %stack.height.inc = add i64 %stack.height.dec, 8
     store i64 %stack.height.inc, ptr %stack.height.addr
     ; store them
     store i32 %index.west,  ptr %s.0, align 4
