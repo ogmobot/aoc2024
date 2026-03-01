@@ -98,23 +98,24 @@
         grid))
 
 
-(define grid (file->grid "input20.txt"))
+(define (main)
+    (define grid (file->grid "input20.txt"))
 
-(define distance-from-start
-    (dijk
-        grid
-        (java.util.PriorityQueue [(cons 0 (hash-table-ref grid 'start))])
-        (make-hash-table)))
-(define distance-from-end
-    (dijk
-        grid
-        (java.util.PriorityQueue [(cons 0 (hash-table-ref grid 'end))])
-        (make-hash-table)))
+    (define distance-from-start
+        (dijk
+            grid
+            (java.util.PriorityQueue [(cons 0 (hash-table-ref grid 'start))])
+            (make-hash-table)))
+    (define distance-from-end
+        (dijk
+            grid
+            (java.util.PriorityQueue [(cons 0 (hash-table-ref grid 'end))])
+            (make-hash-table)))
 
-(define orig (hash-table-ref distance-from-end (hash-table-ref grid 'start)))
-(format #t "~A~%" (count
-    (lambda (x) (<= x (- orig 100)))
-    (shortcut-dists grid distance-from-start distance-from-end 2)))
-(format #t "~A~%" (count
-    (lambda (x) (<= x (- orig 100)))
-    (shortcut-dists grid distance-from-start distance-from-end 20)))
+    (define orig (hash-table-ref distance-from-end (hash-table-ref grid 'start)))
+    (format #t "~A~%" (count
+        (lambda (x) (<= x (- orig 100)))
+        (shortcut-dists grid distance-from-start distance-from-end 2)))
+    (format #t "~A~%" (count
+        (lambda (x) (<= x (- orig 100)))
+        (shortcut-dists grid distance-from-start distance-from-end 20))))

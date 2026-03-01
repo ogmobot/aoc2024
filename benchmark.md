@@ -137,6 +137,7 @@ Day 20
 ------
 * Python/CPython: 51.511s
 * Python/PyPy: 9.728s
+* Kawa Scheme: 47.636s
 
 Day 21
 ------

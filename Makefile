@@ -1,7 +1,7 @@
 RUNNABLES := day01.sh   day02.sh    day03       day04.sh    day05.be \
              day06      day07.sh    day08.js    day09       day10.sh \
              day11      day12       day13       day14.lil   day15.io \
-             day16.lisp
+             day16.lisp day17.5c    day18       day19.sh    day20.scm
 
 dummy:
 
@@ -20,7 +20,7 @@ day04.sh: day04/src/day04.gleam
 	chmod a+x day04.sh
 
 day06: day06.v
-	v -prod -cc gcc -cflags "-march=native -O2" day06.v
+	v -prod -cc gcc-11 -cflags "-march=native -O2" day06.v
 
 day07.sh: day07.ab
 	amber build day07.ab
@@ -57,7 +57,13 @@ day16.fasl: day16.lisp
 # (alternatively, clasp --script day16.lisp)
 
 day18: day18.ll
-	opt-15 -O2 day18.ll -o day18.bc
-	clang-15 -O2 -c day18.bc -o day18.o
-	ld day18.o -o day18
-# clang symlinks to clang-14 on my system, which can't easily optimise ptr types
+	opt -O2 day18.ll -o day18.bc
+	clang -O2 -c day18.bc -o day18.o
+	ld -O2 -lc day18.o -o day18
+
+day19: day19.c3
+	c3c compile -O5 day19.c3
+
+day20c.zip: day20.scm
+	kawa -e "(compile-file \"day20.scm\" \"day20c\")"
+# run with kawa -e "(load \"day20c.zip\") (main)"
