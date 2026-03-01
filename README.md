@@ -243,3 +243,13 @@ My Python solution to this problem used a "top-down" dynamic programming approac
 **C3**: it's C, but better, again.
 
 **Syntax Highlight**: `tmalloc` (a function which, when used inside a temporary memory `@pool`, automatically releases its allocated memory)
+
+Day 20: [Kawa Scheme](https://www.gnu.org/software/kawa/index.html)
+-------------------------------------------------------------------
+Yet another JVM language, and yet another Scheme implementation. Despite being a LISP that runs on the JVM, Kawa is very different to Clojure: it conforms to R7RS and uses more convential syntax than its cousin. Like Clojure, though, it has access to Java objects and their methods. When I found my solution's runtime to be quite slow, I tried replacing the SRFI-69 hash table with `java.util.Hashtable`; but this made the program run even slower, ha ha. It's possible the `java.util.PriorityQueue` being used in the program's breadth-first-search is another source of slowness.
+
+Despite the start-up of the Kawa runtime, it runs a little faster than my Python solution.
+
+**Kawa**: it's just LISP, but for JVM.
+
+**Syntax Highlight**: `[ : ]` (constructs a range; e.g. `[0 <=: 3]` evaluates to `#(0 1 2 3)`)
