@@ -3,11 +3,9 @@ import time
 import functools
 import itertools
 
-lines ="""279A
-286A
-508A
-463A
-246A""".split("\n")
+with open("input21.txt") as fp:
+    lines = [line.strip() for line in fp]
+
 lines_ = """029A
 980A
 179A
