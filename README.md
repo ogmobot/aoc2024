@@ -253,3 +253,15 @@ Despite the start-up of the Kawa runtime, it runs a little faster than my Python
 **Kawa**: it's just LISP, but for JVM.
 
 **Syntax Highlight**: `[ : ]` (constructs a range; e.g. `[0 <=: 3]` evaluates to `#(0 1 2 3)`)
+
+Day 21: [Wren](https://wren.io)
+-------------------------------
+Wren is a nippy little scripting language. It's very similar to Lua, in that it's a C-compatible embedded language that runs bytecode in a VM; but its object-oriented syntax and style feel far more similar to Ruby. It seems to have all of the advantages of both languages, while being a little quicker to run than both!
+
+It was a little tricky to make the recursive part of this solution work. My first instinct was to make a Function, distinct from a class; but to do that, a block of code must be passed to the Function constructor (because of _course_ a function is an instance of a class), but at the time when that block is compiled to bytecode, the symbol for that function doesn't yet exist. Hence, the recursive solving function is a Method. Wren does some OO-magic that represents classes and objects efficiently, and part of that allows methods to be recursive. Hence, most of the program logic resides within methods.
+
+I have a distinct memory of finishing my original Python solution on my phone early in the morning of the 22nd of December at Central Station (on my way to the airport so I could see my family for Christmas). I hadn't been able to figure out a solution on the evening of the 21st, and was trying hard to complete it within 24 hours from the time it was released. I was very relieved to finally solve it. (I like to think the circumstances help to excuse some of the messiness of the Python solution.) The Wren solution is, by comparison, much neater.
+
+**Wren**: It's like Ruby, but if it was Lua, but if it was faster.
+
+**Syntax Highlight**: `_` (marks a field [that is, an instance variable] within a class)
