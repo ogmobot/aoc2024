@@ -79,24 +79,21 @@ class Solver {
     }
 
     solveEdge(layers, edge) {
+        if (layers == 0) return 1
         if (!(_cache[layers])) _cache[layers] = {}
         if (!(_cache[layers][edge])) {
-            if (layers == 0) {
-                _cache[layers][edge] = 1
-            } else {
-                var steplens = []
-                //System.print("edge=%(edge) %(ALL_EDGES[edge])")
-                for (path in _allPaths[edge]) {
-                    var subtotal = 0
-                    for (oneStep in pairwiseString("A"+path+"A")) {
-                        subtotal = subtotal + solveEdge(layers - 1, oneStep)
-                    }
-                    steplens.add(subtotal)
+            var steplens = []
+            //System.print("edge=%(edge) %(ALL_EDGES[edge])")
+            for (path in _allPaths[edge]) {
+                var subtotal = 0
+                for (oneStep in pairwiseString("A"+path+"A")) {
+                    subtotal = subtotal + solveEdge(layers - 1, oneStep)
                 }
-                _cache[layers][edge] = steplens.reduce(Fn.new {|x, y|
-                    return x.min(y)
-                })
+                steplens.add(subtotal)
             }
+            _cache[layers][edge] = steplens.reduce(Fn.new {|x, y|
+                return x.min(y)
+            })
         }
         return _cache[layers][edge]
     }
