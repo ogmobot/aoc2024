@@ -46,7 +46,7 @@ var allSeqs = Fn.new {|self, grid, from_coord, to_coord|
     return result
 }
 
-var makeEdges = Fn.new {|coord_dict|
+var findAllPaths = Fn.new {|coord_dict|
     // Sets up a map of
     // (from + to): [possible, paths, between, them]
     var result = {}
@@ -63,14 +63,13 @@ var makeEdges = Fn.new {|coord_dict|
     return result
 }
 
-var ALL_EDGES = {}
-var keypad_edges = makeEdges.call(KEYPAD_COORDS)
-var numpad_edges = makeEdges.call(NUMPAD_COORDS)
-for (kv in keypad_edges) ALL_EDGES[kv.key] = kv.value
-for (kv in numpad_edges) ALL_EDGES[kv.key] = kv.value
+var allPaths = {}
+for (kv in findAllPaths.call(KEYPAD_COORDS)) allPaths[kv.key] = kv.value
+for (kv in findAllPaths.call(NUMPAD_COORDS)) allPaths[kv.key] = kv.value
 
 class Solver {
-    construct new() {
+    construct new(allPaths) {
+        _allPaths = allPaths
         _cache = {}
     }
 
@@ -87,7 +86,7 @@ class Solver {
             } else {
                 var steplens = []
                 //System.print("edge=%(edge) %(ALL_EDGES[edge])")
-                for (path in ALL_EDGES[edge]) {
+                for (path in _allPaths[edge]) {
                     var subtotal = 0
                     for (oneStep in pairwiseString("A"+path+"A")) {
                         subtotal = subtotal + solveEdge(layers - 1, oneStep)
@@ -119,7 +118,7 @@ class Solver {
 
 var lines = File.read("input21.txt").trim().split("\n")
 
-var s = Solver.new()
+var s = Solver.new(allPaths)
 //System.print(s.solveCalibur(3, ["029A","980A","179A","456A","379A"]))
 System.print(s.solveCalibur(3, lines))
 
