@@ -265,3 +265,13 @@ I have a distinct memory of finishing my original Python solution on my phone ea
 **Wren**: It's like Ruby, but if it was Lua, but if it was faster.
 
 **Syntax Highlight**: `_` (marks a field [that is, an instance variable] within a class)
+
+Day 22: [Odin](https://odin-lang.org)
+-------------------------------------
+The n+3th "C but better" language I've used. In its design, Odin makes a number of deliberate departures from C. For example, in contrast to the `*` pointers of C-like syntax, Odin uses the Pascal-like syntax of `^` as a prefix to indicate a type, and as a suffix to indicate a dereference. (C-like syntax doesn't permit this, of course, due to `*` also meaning multiplication.) All variables are zero-initialised by default, but you _can_ explicity declare variables to be uninitialised; and there's a default memory allocation mechanism, but you _can_ manage that manually as well. It also eschews an official package manager, wanting to avoid the "dependency hell" problem that they inevitably create; but it also comes with a number of "vendor" libraries in addition to its "core" libraries (mostly wrappers around well-known C or C++ libraries), which extend its functionality a lot. It's a nice language.
+
+I wrote a multithreaded solution to this problem, since my Python solution took several minutes to run. I was surprised to discover that my Odin solution took under two seconds to run! Perhaps multithreading wasn't necessary after all..? Oh well, I'm always happy with extra speed!
+
+**Odin**: all the control of C, but none of its footguns.
+
+**Syntax Highlight**: `:` (used to declare a variable, or to assign a constant value; so `::` assigns a constant value of an inferred type, and is used to e.g. define procedures)
