@@ -1,12 +1,15 @@
 package day22
+import "base:runtime"
 import "core:fmt"
+import "core:mem"
 import "core:os"
 import "core:strconv"
 import "core:strings"
 import "core:thread"
 
-PRUNE :: 16777216
+THREAD_COUNT :: 8
 
+PRUNE :: 16777216
 prng :: proc(seed: int) -> int {
     x := seed
     x = (x ~ (x <<  6)) % PRUNE
@@ -15,8 +18,8 @@ prng :: proc(seed: int) -> int {
     return x
 }
 
-worker :: proc(t: ^thread.Thread) {
-    dptr := (^int)(t.data)
+worker :: proc(t: thread.Task) {
+    dptr := cast(^int)(t.data)
     x: int = dptr^
     for _ in 1..=2000 {
         x = prng(x)
@@ -33,34 +36,36 @@ main :: proc() {
     }
     defer delete(data, context.allocator)
 
-    seeds := make([dynamic]int, 0)
-    threads := make([dynamic]^thread.Thread, 0)
-
+    values := make([dynamic]int, 0)
     text := string(data)
     for line in strings.split_lines_iterator(&text) {
         n, ok := strconv.parse_int(line)
         if ok {
-            append(&seeds, n)
+            append(&values, n)
         } else {
             fmt.printf("Malformed line: %s\n", line)
         }
     }
-    // 1632 lines... that's a lotta threads.
 
-    for seed in &seeds {
-        if t := thread.create(worker); t != nil {
-            // pass pointers for these ints directly to the threads
-            t.user_index = len(threads)
-            t.data = &(seeds[t.user_index])
-            append(&threads, t)
-            thread.start(t)
-        }
+    pool: thread.Pool
+    thread.pool_init(&pool, context.allocator, THREAD_COUNT)
+    // DO NOT USE CONTEXT.ALLOCATOR AFTER THIS POINT.
+    thread.pool_start(&pool)
+    defer thread.pool_destroy(&pool)
+
+    for i in 0..<len(values) {
+        thread.pool_add_task(&pool,
+            runtime.nil_allocator(),
+            worker,
+            &(values[i]),
+            i
+        )
     }
+    thread.pool_finish(&pool)
 
     total: u64 = 0
-    for t in &threads {
-        thread.join(t)
-        total += (u64)(((^int)(t.data))^)
+    for x in &values {
+        total += cast(u64) x
     }
     fmt.println(total)
     return
