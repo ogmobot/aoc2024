@@ -9,6 +9,18 @@ import "core:thread"
 
 THREAD_COUNT :: 8
 
+soln_data :: struct {
+    seed: int,
+    seqs: map[int]int
+}
+
+encode_seq :: proc(a, b, c, d: int) -> int {
+    return ((a + 10) * 20 * 20 * 20
+          + (b + 10) * 20 * 20
+          + (c + 10) * 20
+          + (d + 10))
+}
+
 PRUNE :: 16777216
 prng :: proc(seed: int) -> int {
     x := seed
@@ -19,12 +31,28 @@ prng :: proc(seed: int) -> int {
 }
 
 worker :: proc(t: thread.Task) {
-    dptr := cast(^int)(t.data)
-    x: int = dptr^
-    for _ in 1..=2000 {
+    ptr := cast(^soln_data)(t.data)
+    x := ptr.seed
+    x0: int = ---    // oldest
+    x1: int = ---
+    x2: int = ---
+    x3: int = ---
+    x4: int = x % 10 // newest
+    for i in 1..=2000 {
         x = prng(x)
+        x0 = x1
+        x1 = x2
+        x2 = x3
+        x3 = x4
+        x4 = x % 10
+        if i >= 4 {
+            key := encode_seq(x1-x0, x2-x1, x3-x2, x4-x3)
+            if !(key in ptr.seqs) {
+                ptr.seqs[key] = x4
+            }
+        }
     }
-    dptr^ = x
+    ptr.seed = x
     return
 }
 
@@ -36,12 +64,14 @@ main :: proc() {
     }
     defer delete(data, context.allocator)
 
-    values := make([dynamic]int, 0)
+    values := make([dynamic]soln_data, 0)
     text := string(data)
     for line in strings.split_lines_iterator(&text) {
         n, ok := strconv.parse_int(line)
         if ok {
-            append(&values, n)
+            data_chunk: soln_data = {seed = n, seqs = make(map[int]int)}
+            defer delete(data_chunk.seqs)
+            append(&values, data_chunk)
         } else {
             fmt.printf("Malformed line: %s\n", line)
         }
@@ -63,10 +93,25 @@ main :: proc() {
     }
     thread.pool_finish(&pool)
 
-    total: u64 = 0
-    for x in &values {
-        total += cast(u64) x
+    last_seed_total: i64 = 0
+    all_seq_totals := make(map[int]int)
+    defer delete(all_seq_totals)
+    best_profit := 0
+
+    for chunk in &values {
+        last_seed_total += cast(i64) chunk.seed
+        for k, v in chunk.seqs {
+            if !(k in all_seq_totals) {
+                all_seq_totals[k] = 0
+            }
+            //fmt.printf("k=%d, v=%d, seq_total=%d\n", k, v, all_seq_totals[k])
+            all_seq_totals[k] += v
+            if all_seq_totals[k] > best_profit {
+                best_profit = all_seq_totals[k]
+            }
+        }
     }
-    fmt.println(total)
+    fmt.println(last_seed_total)
+    fmt.println(best_profit)
     return
 }

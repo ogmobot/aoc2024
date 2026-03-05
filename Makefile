@@ -1,7 +1,8 @@
 RUNNABLES := day01.sh   day02.sh    day03       day04.sh    day05.be \
              day06      day07.sh    day08.js    day09       day10.sh \
              day11      day12       day13       day14.lil   day15.io \
-             day16.lisp day17.5c    day18       day19.sh    day20.scm
+             day16.lisp day17.5c    day18       day19.sh    day20.scm\
+             day21.wren day22.odin
 
 dummy:
 
@@ -57,9 +58,9 @@ day16.fasl: day16.lisp
 # (alternatively, clasp --script day16.lisp)
 
 day18: day18.ll
-	opt -O2 day18.ll -o day18.bc
-	clang -O2 -c day18.bc -o day18.o
-	ld -O2 -lc day18.o -o day18
+	opt -O3 day18.ll -o day18.bc
+	clang -O3 -c day18.bc -o day18.o
+	ld -O3 -lc day18.o -o day18
 
 day19: day19.c3
 	c3c compile -O5 day19.c3
@@ -67,3 +68,6 @@ day19: day19.c3
 day20c.zip: day20.scm
 	kawa -e "(compile-file \"day20.scm\" \"day20c\")"
 # run with kawa -e "(load \"day20c.zip\") (main)"
+
+day22: day22.odin
+	odin build day22.odin -file -o:speed -microarch:native
