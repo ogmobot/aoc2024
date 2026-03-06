@@ -275,3 +275,13 @@ I wrote a multithreaded solution to this problem, since my Python solution took 
 **Odin**: all the control of C, but none of its footguns.
 
 **Syntax Highlight**: `:` (used to declare a variable, or to assign a constant value; so `::` assigns a constant value of an inferred type, and is used to e.g. define procedures)
+
+Day 23: [R](https://www.r-project.org)
+--------------------------------------
+I think the last time I used R was for university over a decade ago. It does a lot of those weird things that mathematicians (or statisticians) find convenient for a programming language, like having single-letter function names like `c`, `t`, or `V`; or having the default behaviour of `print` be showing the representation of its argument, `"`s and all; or starting list indices at 1; or having verbose start-up messages. When I last used this, I didn't really understand the idea of anonymous functions, but using them makes so much sense in this context. That part of the language, at least, feels a lot more sensible now.
+
+Weirdness aside, it's a very solid language for dealing with mathematical objects. With the right library for graphs, this problem is just a matter of parsing the data and calling the right functions. I learned the Chiba & Nishizeki triangle algorithm and the Bron-Kerbosch maximal cliques algorithm for the Python solution; but they (or somehting like them) were already built into the `igraph` R library. (The process of filtering out triangles that don't contain a node starting with "t" seems to be the slowest part of the solution, and takes over a minute. This could probably be sped up somehow...) Funnily enough, the string tests required for part 1 were tricky enough that I solved the second part of the problem first.
+
+**R**: the `import solution` language for mathematics problems.
+
+**Syntax Highlight**: `<-` (the assignment operator)
