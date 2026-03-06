@@ -13,8 +13,7 @@ tless_party <- induced_subgraph(
     V(lan_party)[!startsWith(V(lan_party)$name, "t")]
 )
 non_t_trigs <- sum(count_triangles(tless_party)) / 3
-message(all_trigs - non_t_trigs)
+write(all_trigs - non_t_trigs, stdout())
 
 clique <- largest_cliques(lan_party)[[1]]
-cpu_names <- sapply(clique, function (x) {vertex_attr(lan_party, "name", x)})
-message(paste(sort(cpu_names), collapse = ","))
+write(paste(sort(clique$name), collapse = ","), stdout())
