@@ -285,3 +285,13 @@ Weirdness aside, it's a very solid language for dealing with mathematical object
 **R**: the `import solution` language for mathematics problems.
 
 **Syntax Highlight**: `<-` (the assignment operator)
+
+Day 24: [Janet](https://janet-lang.org)
+---------------------------------------
+Another LISP and another language designed with embedding in mind. Janet feels a lot closer to the non-traditional LISPs like Clojure or Hy than it does to Scheme or Common Lisp. Its literal hash tables (`@{...}`) feel a lot cleaner than the latter's `(make-hash-table)`, and it's a little quicker (and more readable) to type `(fn [args] ...)` than `(lambda (args) ...)`. It has some -- but not all -- of Common Lisp's weird little `loop` macros. Like Clojure, it takes a little while to get familiar with the differences between this and more convential LISPs, but it feels very nice to work with once there. Unlike Clojure, it supports tail recursion right out of the box, which I find a lot more attractive than using `recur`!
+
+My Python solution solved this problem by writing functions to examine and analyse the structure of logic gates within the puzzle, so that I could manually determine which wires required swapping and put the list of required swaps into the program. (Does this count as solving-by-hand, as I did for 2023's Day 6? It's also reminiscent of the process I used for 2021's Day 24.) For my Janet solution, I decided to finally make the program do the work for me. Its method is not complex: figure out where the problem is, find the group of all wires that could possibly be related to the problem, and then swap every possible pair of those wires and check which swap gets the best results. It is very time-consuming, though; the program takes 100 seconds to find the four correct swaps. (It almosts succeeds in fixing all of the half-adders without needing to wire in a carry bit from the previous half-adder, but one of the swaps requires that check.)
+
+**Janet**: a clean, embeddable LISP.
+
+**Syntax Highlight**: `@` (indicates that a data structure is mutable)
