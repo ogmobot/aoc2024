@@ -66,9 +66,6 @@
             (set yacc (math/floor (/ yacc 2)))
             (++ i))))
 
-(defn select-binary-digit [n i]
-    (% (math/floor (/ n (math/exp2 i))) 2))
-
 (defn seek-first-error [db x y z]
     # Finds the smallest ii for which zii zjj doesn't match xii + yii
     (var [i done    result]
@@ -162,14 +159,13 @@
         (put db b tmp)))
 
 (defn fix-error-at [db tags relevant-wires error-index]
-    (print (string/format "fixing error at adder %d..." error-index))
+    #(print (string/format "fixing error at adder %d..." error-index))
     (var switch-results @[])
     (loop [i :range [0 (length relevant-wires)]]
     (loop [j :range [0 i]]
         (let [sandbox (merge @{} db)
               a (relevant-wires i)
               b (relevant-wires j)]
-            #(print (string/format "i=%d j=%d" i j))
             (switch-wires sandbox a b)
             (array/push switch-results
                 [(seek-first-error sandbox "x" "y" "z") [a b]]))))
@@ -187,7 +183,6 @@
                             error-index)]
                 #(pp switched)
                 (switch-wires db ;switched)
-                #(switch-wires db (switched 0) (switched 1))
                 switched))))
 
 (defn fix-all-errors [db already-switched]
