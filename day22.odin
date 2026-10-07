@@ -104,7 +104,6 @@ main :: proc() {
             if !(k in all_seq_totals) {
                 all_seq_totals[k] = 0
             }
-            //fmt.printf("k=%d, v=%d, seq_total=%d\n", k, v, all_seq_totals[k])
             all_seq_totals[k] += v
             if all_seq_totals[k] > best_profit {
                 best_profit = all_seq_totals[k]
