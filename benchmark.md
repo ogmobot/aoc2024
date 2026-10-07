@@ -84,7 +84,7 @@ Day 12
 
 Day 13
 ------
-* Python/CPython:0.169s
+* Python/CPython: 0.169s
 * Python/PyPy: 0.789s
 * LIL: 0.013s
 
@@ -143,21 +143,29 @@ Day 21
 ------
 * Python/CPython: 0.149s
 * Python/PyPy: 1.292s
+* Wren: 0.070s
 
 Day 22
 ------
 * Python/CPython: 3m38.810s
 * Python/PyPy: 6m54.791s
+* Odin: 1.417s\*
+
+\* uses concurrency
 
 Day 23
 ------
 * Python/CPython: 4.107s
 * Python/PyPy: 9.670s
+* R: 2.964s
 
 Day 24
 ------
-* Python/CPython: 0.154s
-* Python/PyPy: 0.971s
+* Python/CPython: 0.154s\*
+* Python/PyPy: 0.971s\*
+* Janet: 1m41.481s
+
+\* substantially different algorithm (solved by manually determining switches; using this method in Janet causes it to take 0.096s)
 
 Day 25
 ------
