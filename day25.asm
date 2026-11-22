@@ -28,8 +28,28 @@ __sdcc_program_startup:
     .area CSEG (CODE)
 _main:
     ; Program goes here
-    mov a, #0x23
+    ; Read input
+    mov scon, #0x90 ; serial control: mode 01, MCE 0, receiver enable 1
+    lcall readserial
     lcall storchar
+    ; Compute solution
+    ; (TODO)
+    ; Write output
+    mov scon, #0x80 ; serial control: mode 01, MCE 0, receiver enable 0
+    mov a, #0x23
+    lcall writeserial
+    ret
+
+readserial:
+    jnb ri, 0 ; wait here until byte received (ri set)
+    mov a, sbuf
+    clr ri
+    ret
+
+writeserial:
+    clr ti
+    mov sbuf, a
+    jnb ti, 0 ; wait here until byte transmitted (ti set)
     ret
 
 storchar:
@@ -44,23 +64,23 @@ storchar:
     ascii_period    = 0x2e
     ascii_newline   = 0x0a
     ascii_hash      = 0x23
-    cjne A, #ascii_hash, storchar_skiphash
+    cjne a, #ascii_hash, storchar_skiphash
     ; found '#'
-    mov R2, #0 ; reset newline counter
-    mov A, #1
+    mov r2, #0 ; reset newline counter
+    mov a, #1
     lcall storinputbit
     ret
 storchar_skiphash:
-    cjne A, #ascii_period, storchar_skipdot
+    cjne a, #ascii_period, storchar_skipdot
     ; found '.'
-    mov R2, #0 ; reset newline counter
-    mov A, #0
+    mov r2, #0 ; reset newline counter
+    mov a, #0
     lcall storinputbit
     ret
 storchar_skipdot:
-    cjne A, #ascii_newline, storchar_eof
+    cjne a, #ascii_newline, storchar_eof
     ; found '\n'
-    inc R2
+    inc r2
     ; TODO increment newline counter
     ; TODO If it's two:
     lcall storinputzeroes
@@ -91,8 +111,12 @@ start_of_input_ptr:
 end_of_input_ptr:
     .dw puzzle_input
 puzzle_input:
-    ; An array of 
-
+    ; An array of 5-byte items, each representing a key or lock (see puzzle)
+    ; Input contains 500 of these
+    .ds 2500
+    ; ASlink can't find 2504 consecutive bytes to store this in :(
+    ; Arrgh... Most registers within 8051 are 8-bit, so they won't be able to
+    ; traverse this array...
 ; some directives
     ; .db [byte] define byte
     ; .dw [word] define word
