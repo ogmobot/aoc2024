@@ -295,3 +295,15 @@ My Python solution solved this problem by writing functions to examine and analy
 **Janet**: a clean, embeddable LISP.
 
 **Syntax Highlight**: `@` (indicates that a data structure is mutable)
+
+Day 25: [MMIXAL](https://mmix.cs.hm.edu/index.html)
+---------------------------------------------------
+Knuth's MMIX machine is a pedagogical tool designed to aid in teaching the _Art of Computer Programming._ I have used the older MIXAL when working through the exercises of that book series, and it felt very old and clunky. MMIXAL, by comparision, feels a lot more modern and smooth. (This is, of course, very intentional. MMIXAL, like ARM, uses modern ideas like RISC architecture and fixed-width instructions. I'm not sure if MIXAL even had a return stack.)
+
+One thing MMIX shares with other "toy" assembly languages is the ease of input and output. No need to, for example, set the serial configuration to "transmit", write a byte to the serial data register, and wait for the "transmission complete" bit to flip! The number of registers (256) and the addressing scheme made it feel like data was free -- again, an artefact of the pedagogical nature of the language. (I'm sure there's architecture out there that has 256 general-purpose registers available; but this felt more like writing in LLVM, which maps a large number of virtual registers to a smaller number of hardware registers.) Rather than fiddling with end-of-file detection, end-of-line detection, memory allocation, and so on, I just hardcoded the input file size. Even the program's output is hardcoded to a 4-digit solution. One day I might change this if I'm feeling motivated.
+
+I originally attempted this task in 8051 assembly language in the hope I'd be able to run it on a microcontroller, but the fact that the input's size was greater than 255 made the thing very finicky -- simply iterating would be a huge hassle, and the assembler I was using couldn't find enough space to allocate for storing 2000 bytes of input. (Plus the whole input/output thing, see above.) The approach I used with MMIX (i.e. storing each input pattern within 32 bits, then AND-ing them together) is the same method I was intending to use with 8051 assembly.
+
+**MMIXAL**: RISC architecture really does change everything.
+
+**Syntax Highlight**: `PUSHJ` (Push return address _and_ local variables to stack -- the instruction takes an argument that specifies how many local variables to save)
