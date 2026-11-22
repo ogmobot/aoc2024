@@ -77,9 +77,7 @@ day23.Rc: day23.r
 # run with R -s -e "library(\"compiler\"); loadcmp(\"day23.r\")" 2>/dev/null
 # (it's not really any faster than Rscript day23.r, though)
 
-day25.hex: day25.asm
-	sdas8051 -los day25.asm
-	sdcc day25.rel
-	packihx day25.ihx > day25.hex
+day25: day25.mms
+	mmixal day25.mms
 # run with
-#   s51 -t 8051 -c /dev/null -S in=input25.txt,out=/dev/stdout day25.hex
+#   mmix day25
