@@ -304,6 +304,30 @@ One thing MMIX shares with other "toy" assembly languages is the ease of input a
 
 I originally attempted this task in 8051 assembly language in the hope I'd be able to run it on a microcontroller, but the fact that the input's size was greater than 255 made the thing very finicky -- simply iterating would be a huge hassle, and the assembler I was using couldn't find enough space to allocate for storing 2000 bytes of input. (Plus the whole input/output thing, see above.) The approach I used with MMIX (i.e. storing each input pattern within 32 bits, then AND-ing them together) is the same method I was intending to use with 8051 assembly.
 
+Big props to Martin Ruckert for his 2012 MMIX Quick Reference Card.
+
 **MMIXAL**: RISC architecture really does change everything.
 
 **Syntax Highlight**: `PUSHJ` (Push return address _and_ local variables to stack -- the instruction takes an argument that specifies how many local variables to save)
+
+Conclusion
+==========
+Once again, it's taken me about a year to actually complete this self-imposed 25-language challenge (December 2025 - November 2026). I blame the tooling for 8051 assembly, ha ha.
+
+Some of the languages I used this year were _really_ not designed for this kind of thing. I'm thinking of, for example, Heol (which was barely a week or two old when I used it for Day 2) and OpenSCAD (which was meant for programmatic 3D modelling, and cannot actually open text files for reading). Amber didn't support recursion at the time I wrote the Day 7 solution (but it now does), LIL Is a Language's compiler failed to build at all (until I tweaked it -- see `day13_lil_veosotano.diff`), Mirth and Little Interpreted Language required weird hacks to bring their programs up to a reasonable speed.
+
+Other languages were fine to use, but very finicky to set up. Grace required setting up environment variables, Gleam required setting up an entire project folder for my little script to run in, and Objective-C and LLVM both required huge amounts of utilities and libraries. Clasp's runtime seemed to take forever to load, and it ran Common Lisp more slowly than SBCL anyway!
+
+However, there were a number of languages that surprised me with how much I liked them. Both V and Odin handled threads very neatly (and ran very quickly), Io felt like a better Smalltalk, and Nickle felt like it combined all the good parts of C with the ease of scripting. The huge standout was Lil, the scripting language for Decker. A lovely mix of functional and object-oriented paradigms, in which databases are a basic data type, that I could not possibly have expected to find when downloading this Hypercard-inspired hobby project.
+
+In 2025, Eric began limiting the Advent of Code event to just 12 days, so it's likely that 2024 will be the last year featuring 25 days' worth of puzzles (well, 24.5 days' worth). I'll likely keep up the each-day-in-a-different-language challenge, but my list of languages has grown enough that I might need to go back and re-do the older challenges as well. (Or maybe start doing `everybody.codes`..?)
+
+Some language picks for this year:
+* Most portable: LIL (Little Interpreted Language)
+* Favourite passion project: 헐
+* Favourite C-with-extras: Nickle
+* Favourite language for going fast: Odin
+* Favourite LISP: Janet
+* Most finicky to set up: LIL (LIL Is a Language)
+* Most finicky to write: Amber
+* Most syntactically sweet and most fun overall: Lil (Decker scripting language)
