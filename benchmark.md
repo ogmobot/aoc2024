@@ -171,3 +171,4 @@ Day 25
 ------
 * Python/CPython: 0.536s
 * Python/PyPy: 1.164s
+* MMIX: 0.790s
