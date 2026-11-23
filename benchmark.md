@@ -44,9 +44,7 @@ Day 07
 ------
 * Python/CPython: 0.315s
 * Python/PyPy: 1.557s
-* Amber: 21m52.602s
-
-\* pretty different algorithm
+* Amber: 2m37.137s
 
 Day 08
 ------

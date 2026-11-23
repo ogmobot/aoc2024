@@ -13,52 +13,35 @@ fun minpow(lim: Int, b: Int): Int {
 }
 
 fun is_valid(orig_line: Text, is_p2: Bool): Bool? {
-    // Recursion not yet supported... :/ recurse manually instead
-    // Keep recursion call stack as array of strings
-    // (nested arrays not supported)
-    // e.g. ["123: 12 3"] -> ["12: 12", "41: 12", "120: 12"] etc.
-    // (well, better to keep track of index...)
-    // ["123:1"] -> ["12:0", "41:0", "120:0"] etc.
-    // (instead of string splitting, reserve last 2 digits for index)
-    // [12301] -> [1200, 4100, 12000] etc.
-
-    let parts = split(orig_line, ":")
-    let target = parse_int(parts[0])?
-    let val_strings = split_words(trim(parts[1]))
+    const parts = split(orig_line, ":")
+    const target = parse_int(parts[0])?
+    const val_strings = split_words(trim(parts[1]))
     let vals = [Int]
     for val_string in val_strings {
         vals += [parse_int(val_string)?]
     }
-    let args = [target*100 + (len(vals) - 1)]
-    while len(args) > 0 {
-        let line = array_pop(args) failed {return false}
-        // evidently the "while len(args) > 0" isn't enough...
-        target = line / 100
-        let index = line % 100
-        if index == 0 {
-            if target == vals[0]:
+    return rec_is_valid(target, vals, len(vals) - 1, is_p2)
+}
+
+fun rec_is_valid(target: Int, nums: [Int], last_i: Int, is_p2: Bool): Bool {
+    if last_i == 0 {
+        return (target == nums[0])
+    }
+    const last = nums[last_i]
+    if is_p2 {
+        const divfactor = minpow(last, 10)
+        if target % divfactor == last {
+            if rec_is_valid(target / minpow(last, 10), nums, last_i - 1, is_p2):
                 return true
-        } else {
-            let last = vals[index]
-            if is_p2 {
-                let divfactor = minpow(last, 10)
-                if target % divfactor == last:
-                    args += [
-                        (target / minpow(last, 10))*100
-                        + index - 1
-                    ]
-            }
-            if target % last == 0:
-                args += [
-                    (target / last)*100
-                    + index - 1
-                ]
-            if target - last >= 0:
-                args += [
-                    (target - last)*100
-                    + index - 1
-                ]
         }
+    }
+    if target % last == 0 {
+        if rec_is_valid(target / last, nums, last_i - 1, is_p2):
+            return true
+    }
+    if target  - last >= 0 {
+        if rec_is_valid(target - last, nums, last_i - 1, is_p2):
+            return true
     }
     return false
 }
@@ -70,15 +53,15 @@ fun first_int(line: Text): Int? {
 main {
     let total_1 = 0
     let total_2 = 0
-    let fname = "input07.txt"
-    let linecount = $wc -l < {fname} $? as Text
-    for index, line in lines(fname) {
-        echo lpad(index as Text, " ", 3)+"/"+linecount+" ("+line+")"
+    const fname = "input07.txt"
+    const linecount = $wc -l < {fname} $? as Text
+    for index, line in lines(fname)? {
+        echo(lpad(index as Text, " ", 3)+"/"+linecount+" ("+line+")")
         if is_valid(line, false)?:
             total_1 += first_int(line)?
         if is_valid(line, true)?:
             total_2 += first_int(line)?
     }
-    echo total_1
-    echo total_2
+    echo(total_1)
+    echo(total_2)
 }

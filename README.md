@@ -92,6 +92,8 @@ Oh, how naive I was. Don't get me wrong -- the ability to transpile Amber progra
 
 At almost 25 minutes, this is one of my slowest programs that solves the problem using a "fast" method. (Two even slower programs are my Kitten program [2023, Day 11] and solving by hand [2023, Day 6].) Judging by the pull requests on GitHub, version 0.6 of Amber is likely to support recursion, so I might eventually re-implement this solution and see if it runs any faster. (It might also solve the weird bug of the program attempting to pop from an empty array even after `while len(args) > 0`...)
 
+Update: the version change from 0.5.1 to 0.6.0 did indeed introduce recursion. The program runs almost ten times faster (~2m 40s). That's still very slow; but the fact that recursion exists means the language is far more capable and flexible.
+
 **Amber**: built for comfort, not for speed.
 
 **Syntax Highlight**: `if { cond: a cond: b }` ("if-chain" statement behaves like switch/case)
